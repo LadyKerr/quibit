@@ -107,6 +107,16 @@ export const useLinks = () => {
     if (!session?.user) return false;
 
     try {
+      // First try to insert a submission attempt
+      const { error: attemptError } = await supabase
+        .from('submission_attempts')
+        .insert([{ user_id: session.user.id }]);
+
+      if (attemptError) {
+        throw new Error('Rate limit exceeded. Please try again later.');
+      }
+
+      // If attempt logged successfully, try to insert the link
       const { data, error } = await supabase
         .from('links')
         .insert([
@@ -121,7 +131,12 @@ export const useLinks = () => {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        if (error.message.includes('rate_limited_insert_policy')) {
+          throw new Error('You have exceeded the link submission limit. Please try again later.');
+        }
+        throw error;
+      }
 
       setLinks((prev) => [data, ...prev]);
       return true;

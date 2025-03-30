@@ -4,6 +4,54 @@ import { ThemedText } from './ThemedText';
 import { CategoryButtons } from './CategoryButtons';
 import { Link } from '../hooks/useLinks';
 
+const URL_REGEX = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/;
+const MAX_URL_LENGTH = 2048;
+const BLOCKED_DOMAINS = ['example.com', 'evil.com']; // Add domains you want to block
+
+interface UrlValidationResult {
+  isValid: boolean;
+  error?: string;
+}
+
+const validateUrl = (url: string): UrlValidationResult => {
+  if (!url.trim()) {
+    return { isValid: false, error: 'URL is required' };
+  }
+
+  if (url.length > MAX_URL_LENGTH) {
+    return { isValid: false, error: 'URL is too long' };
+  }
+
+  let processedUrl = url.trim().toLowerCase();
+  if (!processedUrl.startsWith('http')) {
+    processedUrl = `https://${processedUrl}`;
+  }
+
+  try {
+    const urlObj = new URL(processedUrl);
+    
+    // Check for blocked domains
+    const domain = urlObj.hostname.toLowerCase();
+    if (BLOCKED_DOMAINS.includes(domain)) {
+      return { isValid: false, error: 'This domain is not allowed' };
+    }
+
+    // Check for valid protocol
+    if (!['http:', 'https:'].includes(urlObj.protocol)) {
+      return { isValid: false, error: 'Only HTTP and HTTPS protocols are allowed' };
+    }
+
+    // Check URL format with regex
+    if (!URL_REGEX.test(processedUrl)) {
+      return { isValid: false, error: 'Invalid URL format' };
+    }
+
+    return { isValid: true };
+  } catch {
+    return { isValid: false, error: 'Invalid URL' };
+  }
+};
+
 interface LinkFormProps {
   onSubmit: (data: {
     title: string;
@@ -32,23 +80,16 @@ export function LinkForm({
   const [notes, setNotes] = useState(initialData?.notes || '');
   const [urlError, setUrlError] = useState('');
 
-  const isValidUrl = useMemo(() => {
-    try {
-      if (!url) return false;
-      new URL(url.toLowerCase().startsWith('http') ? url : `https://${url}`);
-      return true;
-    } catch {
-      return false;
-    }
-  }, [url]);
+  const urlValidation = useMemo(() => validateUrl(url), [url]);
 
   const handleUrlChange = (text: string) => {
     setUrl(text);
-    setUrlError('');
+    const validation = validateUrl(text);
+    setUrlError(validation.error || '');
   };
 
   const handleSubmit = async () => {
-    if (!title.trim() || !isValidUrl) return;
+    if (!title.trim() || !urlValidation.isValid) return;
 
     let processedUrl = url.trim();
     if (!processedUrl.toLowerCase().startsWith('http')) {
@@ -56,19 +97,22 @@ export function LinkForm({
     }
 
     try {
-      new URL(processedUrl);
       await onSubmit({
         title: title.trim(),
         url: processedUrl,
         category: category.trim() || 'Other',
         notes: notes.trim() || null,
       });
-    } catch {
-      setUrlError('Please enter a valid URL');
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('rate limit')) {
+        setUrlError('Too many submissions. Please try again later.');
+      } else {
+        setUrlError('Failed to save link');
+      }
     }
   };
 
-  const isButtonDisabled = !title.trim() || !isValidUrl;
+  const isButtonDisabled = !title.trim() || !urlValidation.isValid;
 
   return (
     <View style={styles.form}>
@@ -172,6 +216,7 @@ const styles = StyleSheet.create({
   inputError: {
     borderWidth: 1,
     borderColor: '#ff6b6b',
+    backgroundColor: '#fff0f0',
   },
   errorText: {
     color: '#ff6b6b',
@@ -179,6 +224,7 @@ const styles = StyleSheet.create({
     marginTop: -8,
     marginBottom: 12,
     marginLeft: 4,
+    fontWeight: '500',
   },
   notesInput: {
     height: 80,

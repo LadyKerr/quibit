@@ -6,7 +6,7 @@ import { useOnboarding } from '../contexts/OnboardingContext';
 export function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const segments = useSegments();
-  const { session, loading } = useAuth();
+  const { session, loading, signOut } = useAuth();
   const { hasCompletedOnboarding } = useOnboarding();
 
   useEffect(() => {
@@ -33,6 +33,15 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
       }
     }
   }, [session, loading, segments, hasCompletedOnboarding]);
+
+  useEffect(() => {
+    if (session?.expires_at) {
+      const expiresAt = new Date(session.expires_at * 1000);
+      if (expiresAt < new Date()) {
+        signOut();
+      }
+    }
+  }, [session]);
 
   if (loading) {
     return null;

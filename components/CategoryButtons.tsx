@@ -30,7 +30,8 @@ export function CategoryButtons({
   style
 }: CategoryButtonsProps) {
   const getCategoryColors = (category: string) => {
-    return CATEGORY_COLORS[category] || { background: '#F0F0F0', text: '#666666' };
+    const trimmedCategory = category.trim().replace(/[<>]/g, '');
+    return CATEGORY_COLORS[trimmedCategory] || { background: '#F0F0F0', text: '#666666' };
   };
 
   return (

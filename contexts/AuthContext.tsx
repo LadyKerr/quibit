@@ -118,11 +118,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      setSession(null);
+      // Add: Clear sensitive data
+      await AsyncStorage.clear(); // Clear local storage
+    } catch (error) {
       throw error;
     }
-    setSession(null);
   };
 
   return (
