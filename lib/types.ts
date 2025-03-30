@@ -35,6 +35,25 @@ export interface Database {
           user_id?: string | null
         }
       }
+      profiles: {
+        Row: {
+          id: string
+          email: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id: string
+          email: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          email?: string
+          updated_at?: string
+        }
+      }
     }
     Views: {
       [_ in never]: never

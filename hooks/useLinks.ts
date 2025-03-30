@@ -1,5 +1,6 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
+import { useAuth } from '../contexts/AuthContext';
 
 export type SortOrder = 'newest' | 'oldest';
 
@@ -8,116 +9,93 @@ export interface Link {
   title: string;
   url: string;
   category: string;
-  timestamp: number;
-  createdAt: string;
+  created_at: string;
+  user_id: string;
 }
 
-const STORAGE_KEY = '@quibit_links';
-const CATEGORIES_KEY = '@quibit_categories';
 const DEFAULT_CATEGORIES = ['Blog', 'Tutorial', 'Video', 'Article', 'Other'];
-
-// Utility function to format relative time
-const getRelativeTime = (date: string) => {
-  const now = new Date();
-  const then = new Date(date);
-  const diffInSeconds = Math.floor((now.getTime() - then.getTime()) / 1000);
-  
-  if (diffInSeconds < 60) return 'just now';
-  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
-  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
-  if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}d ago`;
-  
-  return then.toLocaleDateString('en-US', { 
-    month: 'short',
-    day: 'numeric',
-    year: then.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
-  });
-};
 
 export const useLinks = () => {
   const [links, setLinks] = useState<Link[]>([]);
-  const [customCategories, setCustomCategories] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [sortOrder, setSortOrder] = useState<SortOrder>('newest');
+  const [categories, setCategories] = useState<string[]>(DEFAULT_CATEGORIES);
+  const { session } = useAuth();
 
   useEffect(() => {
-    loadData();
-  }, []);
+    if (session?.user) {
+      loadLinks();
+      loadCategories();
+    }
+  }, [session?.user?.id]);
 
-  const loadData = async () => {
+  const loadLinks = async () => {
     try {
-      const [storedLinks, storedCategories] = await Promise.all([
-        AsyncStorage.getItem(STORAGE_KEY),
-        AsyncStorage.getItem(CATEGORIES_KEY),
-      ]);
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('links')
+        .select('*')
+        .eq('user_id', session?.user?.id)
+        .order('created_at', { ascending: false });
 
-      if (storedLinks) {
-        const parsedLinks = JSON.parse(storedLinks);
-        const updatedLinks = parsedLinks.map((link: Link) => ({
-          ...link,
-          createdAt: link.createdAt || new Date(link.timestamp).toISOString(),
-        }));
-        setLinks(updatedLinks);
-        
-        if (updatedLinks.some((link: Link) => !link.createdAt)) {
-          await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedLinks));
-        }
-      }
-
-      if (storedCategories) {
-        setCustomCategories(JSON.parse(storedCategories));
-      }
+      if (error) throw error;
+      setLinks(data || []);
     } catch (error) {
-      console.error('Error loading data:', error);
+      console.error('Error loading links:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const addCategory = async (category: string) => {
+  const loadCategories = async () => {
     try {
-      const normalizedCategory = category.trim();
-      if (!normalizedCategory) return false;
-      
-      // Don't add if it already exists in either default or custom categories
-      if ([...DEFAULT_CATEGORIES, ...customCategories].includes(normalizedCategory)) {
-        return false;
-      }
+      // Load default categories
+      const { data: defaultData, error: defaultError } = await supabase
+        .from('default_categories')
+        .select('name');
 
-      const updatedCategories = [...customCategories, normalizedCategory].sort();
-      await AsyncStorage.setItem(CATEGORIES_KEY, JSON.stringify(updatedCategories));
-      setCustomCategories(updatedCategories);
-      return true;
+      if (defaultError) throw defaultError;
+
+      // Load user categories
+      const { data: userData, error: userError } = await supabase
+        .from('categories')
+        .select('name')
+        .eq('user_id', session?.user?.id);
+
+      if (userError) throw userError;
+
+      // Combine and sort categories
+      const defaultCategories = defaultData?.map(cat => cat.name) || [];
+      const userCategories = userData?.map(cat => cat.name) || [];
+      
+      setCategories([...new Set([...defaultCategories, ...userCategories])].sort());
     } catch (error) {
-      console.error('Error adding category:', error);
-      return false;
+      console.error('Error loading categories:', error);
     }
   };
 
   const addLink = async (title: string, url: string, category: string) => {
+    if (!session?.user) return false;
+
     try {
-      const now = new Date();
-      const newLink: Link = {
-        id: now.getTime().toString(),
-        title,
-        url,
-        category,
-        timestamp: now.getTime(),
-        createdAt: now.toISOString(),
-      };
-      const updatedLinks = [...links, newLink];
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedLinks));
-      setLinks(updatedLinks);
+      const { data, error } = await supabase
+        .from('links')
+        .insert([
+          {
+            title,
+            url,
+            category,
+            user_id: session.user.id,
+          },
+        ])
+        .select()
+        .single();
 
-      // If this is a new category, add it to custom categories
-      if (category && 
-          !DEFAULT_CATEGORIES.includes(category) && 
-          !customCategories.includes(category)) {
-        await addCategory(category);
-      }
+      if (error) throw error;
 
+      setLinks((prev) => [data, ...prev]);
       return true;
     } catch (error) {
       console.error('Error adding link:', error);
@@ -125,23 +103,71 @@ export const useLinks = () => {
     }
   };
 
-  const editLink = async (id: string, updates: Partial<Omit<Link, 'id' | 'timestamp' | 'createdAt'>>) => {
-    try {
-      const updatedLinks = links.map(link => 
-        link.id === id
-          ? { ...link, ...updates }
-          : link
-      );
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedLinks));
-      setLinks(updatedLinks);
+  const addCategory = async (name: string) => {
+    if (!session?.user) return false;
 
-      // If the category was updated and it's new, add it to custom categories
-      if (updates.category && 
-          !DEFAULT_CATEGORIES.includes(updates.category) && 
-          !customCategories.includes(updates.category)) {
-        await addCategory(updates.category);
+    try {
+      // Check if category exists in default categories
+      const { data: defaultCheck } = await supabase
+        .from('default_categories')
+        .select('name')
+        .eq('name', name)
+        .single();
+
+      if (defaultCheck) {
+        return false;
       }
 
+      // Check if category exists in user categories
+      const { data: userCheck } = await supabase
+        .from('categories')
+        .select('name')
+        .eq('name', name)
+        .eq('user_id', session.user.id)
+        .single();
+
+      if (userCheck) {
+        return false;
+      }
+
+      // Insert new category
+      const { error } = await supabase
+        .from('categories')
+        .insert([
+          {
+            name,
+            user_id: session.user.id,
+          },
+        ]);
+
+      if (error) throw error;
+
+      setCategories(prev => [...prev, name].sort());
+      return true;
+    } catch (error) {
+      console.error('Error adding category:', error);
+      return false;
+    }
+  };
+
+  const editLink = async (
+    id: string,
+    updates: Partial<Omit<Link, 'id' | 'created_at' | 'user_id'>>
+  ) => {
+    if (!session?.user) return false;
+
+    try {
+      const { error } = await supabase
+        .from('links')
+        .update(updates)
+        .eq('id', id)
+        .eq('user_id', session.user.id);
+
+      if (error) throw error;
+
+      setLinks((prev) =>
+        prev.map((link) => (link.id === id ? { ...link, ...updates } : link))
+      );
       return true;
     } catch (error) {
       console.error('Error editing link:', error);
@@ -149,28 +175,21 @@ export const useLinks = () => {
     }
   };
 
-  // Get unique categories from links and combine with default and custom categories
-  const categories = [...new Set([
-    ...DEFAULT_CATEGORIES,
-    ...customCategories,
-    ...links.map(link => link.category)
-  ])].filter(Boolean).sort();
+  const filteredLinks = links
+    .filter((link) => {
+      const matchesSearch =
+        link.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        link.url.toLowerCase().includes(searchQuery.toLowerCase());
 
-  const filteredLinks = links.filter(link => {
-    const matchesSearch = 
-      link.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      link.url.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    const matchesCategory = !selectedCategory || link.category === selectedCategory;
-    
-    return matchesSearch && matchesCategory;
-  }).sort((a, b) => {
-    if (sortOrder === 'newest') {
-      return b.timestamp - a.timestamp;
-    } else {
-      return a.timestamp - b.timestamp;
-    }
-  });
+      const matchesCategory = !selectedCategory || link.category === selectedCategory;
+
+      return matchesSearch && matchesCategory;
+    })
+    .sort((a, b) => {
+      const dateA = new Date(a.created_at).getTime();
+      const dateB = new Date(b.created_at).getTime();
+      return sortOrder === 'newest' ? dateB - dateA : dateA - dateB;
+    });
 
   return {
     links: filteredLinks,
@@ -178,13 +197,11 @@ export const useLinks = () => {
     addLink,
     editLink,
     addCategory,
+    categories,
     searchQuery,
     setSearchQuery,
-    categories,
-    customCategories,
     selectedCategory,
     setSelectedCategory,
-    getRelativeTime,
     sortOrder,
     setSortOrder,
   };
