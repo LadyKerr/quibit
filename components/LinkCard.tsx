@@ -3,6 +3,7 @@ import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Link } from '../hooks/useLinks';
 import { ThemedText } from './ThemedText';
 import { ThemedView } from './ThemedView';
+import { LinkDetailModal } from './LinkDetailModal';
 
 // Map of category to emoji icons
 const CATEGORY_ICONS: { [key: string]: string } = {
@@ -11,6 +12,13 @@ const CATEGORY_ICONS: { [key: string]: string } = {
   Tutorial: '📚',
   Article: '📰',
   Other: '🔗',
+};
+
+// Map of action to emoji icons
+const ACTION_ICONS = {
+  visit: '🔗',
+  edit: '✏️',
+  delete: '🗑️',
 };
 
 interface LinkCardProps {
@@ -22,6 +30,7 @@ interface LinkCardProps {
 
 export function LinkCard({ link, onEdit, onPress, onDelete }: LinkCardProps) {
   const [showNotes, setShowNotes] = useState(false);
+  const [showDetailModal, setShowDetailModal] = useState(false);
 
   // Extract domain from URL
   const getDomain = (url: string) => {
@@ -36,68 +45,87 @@ export function LinkCard({ link, onEdit, onPress, onDelete }: LinkCardProps) {
   const categoryIcon = CATEGORY_ICONS[link.category] || CATEGORY_ICONS.Other;
 
   return (
-    <ThemedView style={styles.card}>
-      <View style={styles.header}>
-        <View style={styles.titleRow}>
-          <ThemedText style={styles.title}>
-            {categoryIcon} {link.title}
-          </ThemedText>
-        </View>
-        <View style={styles.categoryBadge}>
-          <ThemedText style={styles.categoryText}>{link.category}</ThemedText>
-        </View>
-      </View>
-
-      <View style={styles.content}>
-        <ThemedText style={styles.domain}>{getDomain(link.url)}</ThemedText>
-        <ThemedText style={styles.date}>
-          {new Date(link.createdAt).toLocaleDateString('en-US', {
-            month: 'short',
-            day: 'numeric',
-            year: 'numeric',
-          })}
-        </ThemedText>
-      </View>
-
-      {link.notes && (
-        <>
-          <TouchableOpacity
-            style={styles.notesButton}
-            onPress={() => setShowNotes(!showNotes)}
-          >
-            <ThemedText style={styles.notesButtonText}>
-              {showNotes ? 'Hide Notes' : 'Show Notes'}
-            </ThemedText>
-          </TouchableOpacity>
-          {showNotes && (
-            <View style={styles.notesContainer}>
-              <ThemedText style={styles.notes}>{link.notes}</ThemedText>
+    <>
+      <TouchableOpacity onPress={() => setShowDetailModal(true)}>
+        <ThemedView style={styles.card}>
+          <View style={styles.header}>
+            <View style={styles.titleRow}>
+              <ThemedText style={styles.title}>
+                {categoryIcon} {link.title}
+              </ThemedText>
             </View>
-          )}
-        </>
-      )}
+            <View style={styles.categoryBadge}>
+              <ThemedText style={styles.categoryText}>{link.category}</ThemedText>
+            </View>
+          </View>
 
-      <View style={styles.actions}>
-        <TouchableOpacity
-          style={[styles.button, styles.visitButton]}
-          onPress={() => onPress(link.url)}
-        >
-          <ThemedText style={styles.buttonText}>Visit</ThemedText>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.button, styles.editButton]}
-          onPress={() => onEdit(link)}
-        >
-          <ThemedText style={styles.buttonText}>Edit</ThemedText>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.button, styles.deleteButton]}
-          onPress={() => onDelete(link)}
-        >
-          <ThemedText style={styles.buttonText}>Delete</ThemedText>
-        </TouchableOpacity>
-      </View>
-    </ThemedView>
+          <View style={styles.content}>
+            <ThemedText style={styles.domain}>{getDomain(link.url)}</ThemedText>
+            <ThemedText style={styles.date}>
+              {new Date(link.createdAt).toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+              })}
+            </ThemedText>
+          </View>
+
+          {link.notes && (
+            <>
+              <TouchableOpacity
+                style={styles.notesButton}
+                onPress={() => setShowNotes(!showNotes)}
+              >
+                <ThemedText style={styles.notesButtonText}>
+                  {showNotes ? 'Hide Notes' : 'Show Notes'}
+                </ThemedText>
+              </TouchableOpacity>
+              {showNotes && (
+                <View style={styles.notesContainer}>
+                  <ThemedText style={styles.notes}>{link.notes}</ThemedText>
+                </View>
+              )}
+            </>
+          )}
+
+          <View style={styles.actions}>
+            <TouchableOpacity
+              style={styles.iconButton}
+              onPress={() => onPress(link.url)}
+            >
+              <ThemedText style={styles.iconText}>{ACTION_ICONS.visit}</ThemedText>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.iconButton}
+              onPress={() => onEdit(link)}
+            >
+              <ThemedText style={styles.iconText}>{ACTION_ICONS.edit}</ThemedText>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.iconButton}
+              onPress={() => onDelete(link)}
+            >
+              <ThemedText style={styles.iconText}>{ACTION_ICONS.delete}</ThemedText>
+            </TouchableOpacity>
+          </View>
+        </ThemedView>
+      </TouchableOpacity>
+
+      <LinkDetailModal
+        link={link}
+        visible={showDetailModal}
+        onClose={() => setShowDetailModal(false)}
+        onEdit={(link) => {
+          setShowDetailModal(false);
+          onEdit(link);
+        }}
+        onDelete={(link) => {
+          setShowDetailModal(false);
+          onDelete(link);
+        }}
+        onVisit={onPress}
+      />
+    </>
   );
 }
 
@@ -178,30 +206,14 @@ const styles = StyleSheet.create({
   },
   actions: {
     flexDirection: 'row',
-    gap: 8,
+    justifyContent: 'flex-end',
+    gap: 16,
+    marginTop: 8,
   },
-  button: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
+  iconButton: {
+    padding: 8,
   },
-  visitButton: {
-    backgroundColor: '#007AFF',
-    flex: 1,
-  },
-  editButton: {
-    backgroundColor: '#6c757d',
-    flex: 1,
-  },
-  deleteButton: {
-    backgroundColor: '#dc3545',
-    flex: 1,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '500',
+  iconText: {
+    fontSize: 20,
   },
 });
