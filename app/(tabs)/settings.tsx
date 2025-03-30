@@ -8,7 +8,7 @@ export default function SettingsScreen() {
 
   const handleLogout = async () => {
     try {
-      await signOut();
+      await signout();
       Alert.alert('Logged out', 'You have been logged out successfully.');
     } catch (error) {
       Alert.alert('Error', 'Failed to log out. Please try again.');
@@ -38,9 +38,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
+ 
   },
   header: {
-    marginTop: 60,
+    paddingTop: 80,
+    marginTop: 80,
     marginBottom: 32,
   },
   title: {
