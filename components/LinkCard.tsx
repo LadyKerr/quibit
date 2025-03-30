@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Link } from '../hooks/useLinks';
 import { ThemedText } from './ThemedText';
@@ -21,6 +21,8 @@ interface LinkCardProps {
 }
 
 export function LinkCard({ link, onEdit, onPress, onDelete }: LinkCardProps) {
+  const [showNotes, setShowNotes] = useState(false);
+
   // Extract domain from URL
   const getDomain = (url: string) => {
     try {
@@ -58,9 +60,21 @@ export function LinkCard({ link, onEdit, onPress, onDelete }: LinkCardProps) {
       </View>
 
       {link.notes && (
-        <View style={styles.notesContainer}>
-          <ThemedText style={styles.notes}>{link.notes}</ThemedText>
-        </View>
+        <>
+          <TouchableOpacity
+            style={styles.notesButton}
+            onPress={() => setShowNotes(!showNotes)}
+          >
+            <ThemedText style={styles.notesButtonText}>
+              {showNotes ? 'Hide Notes' : 'Show Notes'}
+            </ThemedText>
+          </TouchableOpacity>
+          {showNotes && (
+            <View style={styles.notesContainer}>
+              <ThemedText style={styles.notes}>{link.notes}</ThemedText>
+            </View>
+          )}
+        </>
       )}
 
       <View style={styles.actions}>
@@ -132,7 +146,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 12,
   },
   domain: {
     fontSize: 14,
@@ -141,6 +155,26 @@ const styles = StyleSheet.create({
   date: {
     fontSize: 12,
     color: '#999',
+  },
+  notesButton: {
+    paddingVertical: 8,
+    marginBottom: 8,
+  },
+  notesButtonText: {
+    fontSize: 14,
+    color: '#0a7ea4',
+    fontWeight: '500',
+  },
+  notesContainer: {
+    marginBottom: 12,
+    paddingTop: 8,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: '#eee',
+  },
+  notes: {
+    fontSize: 14,
+    color: '#666',
+    lineHeight: 20,
   },
   actions: {
     flexDirection: 'row',
@@ -169,17 +203,5 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 14,
     fontWeight: '500',
-  },
-  notesContainer: {
-    marginTop: 8,
-    marginBottom: 12,
-    paddingTop: 8,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#eee',
-  },
-  notes: {
-    fontSize: 14,
-    color: '#666',
-    lineHeight: 20,
   },
 });
