@@ -17,6 +17,7 @@ import { ThemedView } from '../../components/ThemedView';
 import { ThemedText } from '../../components/ThemedText';
 import { CategoryButtons } from '../../components/CategoryButtons';
 import { LinkCard } from '../../components/LinkCard';
+import { useAuth } from '../../contexts/AuthContext';
 
 export default function TabOneScreen() {
   const { 
@@ -34,6 +35,8 @@ export default function TabOneScreen() {
     sortOrder,
     setSortOrder,
   } = useLinks();
+
+  const { signOut } = useAuth();
   
   const [title, setTitle] = useState('');
   const [url, setUrl] = useState('');
@@ -129,6 +132,15 @@ export default function TabOneScreen() {
     setSortOrder(current => current === 'newest' ? 'oldest' : 'newest');
   };
 
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      router.replace('/login');
+    } catch (error) {
+      Alert.alert('Error', 'Failed to log out');
+    }
+  };
+
   const renderItem = ({ item }: { item: Link }) => (
     <LinkCard
       link={item}
@@ -142,6 +154,15 @@ export default function TabOneScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <ThemedView style={styles.container}>
+        <View style={styles.header}>
+          <ThemedText style={styles.headerTitle}>Quibit</ThemedText>
+          <TouchableOpacity 
+            style={styles.logoutButton}
+            onPress={handleLogout}
+          >
+            <ThemedText style={styles.logoutText}>Logout</ThemedText>
+          </TouchableOpacity>
+        </View>
         <View style={styles.content}>
           <View style={styles.form}>
             <ThemedText style={styles.formTitle}>
@@ -490,5 +511,26 @@ const styles = StyleSheet.create({
   },
   filterCategories: {
     marginBottom: 8,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    paddingTop: 0,
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+  },
+  logoutButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    backgroundColor: '#f0f0f0',
+  },
+  logoutText: {
+    color: '#007AFF',
+    fontWeight: '600',
   },
 });

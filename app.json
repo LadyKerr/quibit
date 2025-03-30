@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "quirbit",
-    "slug": "quirbit",
+    "name": "quibit",
+    "slug": "quibit",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
