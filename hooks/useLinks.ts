@@ -204,9 +204,17 @@ export const useLinks = () => {
 
   const filteredLinks = links
     .filter((link) => {
-      const matchesSearch =
-        link.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        link.url.toLowerCase().includes(searchQuery.toLowerCase());
+      if (!searchQuery.trim()) {
+        // If no search query, only filter by category
+        return !selectedCategory || link.category === selectedCategory;
+      }
+
+      const query = searchQuery.trim().toLowerCase();
+      const matchesSearch = [
+        link.title || '',
+        link.url || '',
+        link.notes || ''
+      ].some(field => field.toLowerCase().includes(query));
 
       const matchesCategory = !selectedCategory || link.category === selectedCategory;
 
