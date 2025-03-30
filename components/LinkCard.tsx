@@ -57,6 +57,12 @@ export function LinkCard({ link, onEdit, onPress, onDelete }: LinkCardProps) {
         </ThemedText>
       </View>
 
+      {link.notes && (
+        <View style={styles.notesContainer}>
+          <ThemedText style={styles.notes}>{link.notes}</ThemedText>
+        </View>
+      )}
+
       <View style={styles.actions}>
         <TouchableOpacity
           style={[styles.button, styles.visitButton]}
@@ -163,5 +169,17 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 14,
     fontWeight: '500',
+  },
+  notesContainer: {
+    marginTop: 8,
+    marginBottom: 12,
+    paddingTop: 8,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: '#eee',
+  },
+  notes: {
+    fontSize: 14,
+    color: '#666',
+    lineHeight: 20,
   },
 });

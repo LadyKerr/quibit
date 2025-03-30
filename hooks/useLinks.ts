@@ -9,6 +9,7 @@ export interface Link {
   title: string;
   url: string;
   category: string;
+  notes?: string; // Add optional notes field
   created_at: string;
   user_id: string;
 }
@@ -76,7 +77,12 @@ export const useLinks = () => {
     }
   };
 
-  const addLink = async (title: string, url: string, category: string) => {
+  const addLink = async (
+    title: string,
+    url: string,
+    category: string,
+    notes?: string | null
+  ) => {
     if (!session?.user) return false;
 
     try {
@@ -87,6 +93,7 @@ export const useLinks = () => {
             title,
             url,
             category,
+            notes,
             user_id: session.user.id,
           },
         ])

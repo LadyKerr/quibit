@@ -44,6 +44,7 @@ export default function TabOneScreen() {
   const [title, setTitle] = useState('');
   const [url, setUrl] = useState('');
   const [category, setCategory] = useState('');
+  const [notes, setNotes] = useState('');
   const [urlError, setUrlError] = useState('');
   const [newCategoryName, setNewCategoryName] = useState('');
   const [showNewCategoryModal, setShowNewCategoryModal] = useState(false);
@@ -68,6 +69,7 @@ export default function TabOneScreen() {
     setTitle('');
     setUrl('');
     setCategory('');
+    setNotes('');
     setUrlError('');
     setEditingLinkId(null);
   };
@@ -90,9 +92,15 @@ export default function TabOneScreen() {
           title: title.trim(),
           url: processedUrl,
           category: finalCategory,
+          notes: notes.trim() || null,
         });
       } else {
-        success = await addLink(title.trim(), processedUrl, finalCategory);
+        success = await addLink(
+          title.trim(),
+          processedUrl,
+          finalCategory,
+          notes.trim() || null
+        );
       }
 
       if (success) {
@@ -107,6 +115,7 @@ export default function TabOneScreen() {
     setTitle(link.title);
     setUrl(link.url);
     setCategory(link.category);
+    setNotes(link.notes || '');
     setEditingLinkId(link.id);
   };
 
@@ -218,6 +227,16 @@ export default function TabOneScreen() {
                 <ThemedText style={styles.errorText}>{urlError}</ThemedText>
               ) : null}
             </View>
+
+            <TextInput
+              style={[styles.input, styles.notesInput]}
+              placeholder="Notes (optional)"
+              value={notes}
+              onChangeText={setNotes}
+              multiline
+              numberOfLines={3}
+              placeholderTextColor="#666"
+            />
 
             <View style={styles.categorySection}>
               <ThemedText style={styles.sectionTitle}>Category</ThemedText>
@@ -391,6 +410,11 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     marginBottom: 0,
+  },
+  notesInput: {
+    height: 80,
+    textAlignVertical: 'top',
+    paddingTop: 12,
   },
   button: {
     backgroundColor: '#007AFF',
