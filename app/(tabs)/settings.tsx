@@ -1,17 +1,25 @@
 import { StyleSheet, TouchableOpacity, View, Alert } from 'react-native';
+import { router } from 'expo-router'; // Add this import
 import { ThemedView } from '../../components/ThemedView';
 import { ThemedText } from '../../components/ThemedText';
 import { useAuth } from '../../contexts/AuthContext';
 
 export default function SettingsScreen() {
-  const { session, signout } = useAuth();
+  const { session, signOut } = useAuth();
 
   const handleLogout = async () => {
     try {
-      await signout();
-      Alert.alert('Logged out', 'You have been logged out successfully.');
+      await signOut();
+      Alert.alert('Success', 'You have been logged out successfully.');
+      console.log('Logout successful');
+      router.replace('/login'); // Add this line to redirect
     } catch (error) {
-      Alert.alert('Error', 'Failed to log out. Please try again.');
+      console.error('Logout error:', error);
+      Alert.alert(
+        'Error',
+        'Failed to log out. Please try again.',
+        [{ text: 'OK' }]
+      );
     }
   };
 
