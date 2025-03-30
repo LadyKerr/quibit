@@ -4,11 +4,11 @@ import { ThemedText } from '../../components/ThemedText';
 import { useAuth } from '../../contexts/AuthContext';
 
 export default function SettingsScreen() {
-  const { session } = useAuth();
+  const { session, signout } = useAuth();
 
   const handleLogout = async () => {
     try {
-      await supabase.auth.signOut();
+      await signOut();
       Alert.alert('Logged out', 'You have been logged out successfully.');
     } catch (error) {
       Alert.alert('Error', 'Failed to log out. Please try again.');

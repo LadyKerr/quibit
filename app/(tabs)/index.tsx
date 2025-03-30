@@ -39,8 +39,6 @@ export default function TabOneScreen() {
     sortOrder,
     setSortOrder,
   } = useLinks();
-
-  const { signOut } = useAuth();
   
   const [showAddModal, setShowAddModal] = useState(false);
   const [showNewCategoryModal, setShowNewCategoryModal] = useState(false);
@@ -65,15 +63,6 @@ export default function TabOneScreen() {
 
   const toggleSortOrder = () => {
     setSortOrder(current => current === 'newest' ? 'oldest' : 'newest');
-  };
-
-  const handleLogout = async () => {
-    try {
-      await signOut();
-    } catch (error) {
-      console.error('Logout error:', error);
-      Alert.alert('Error', 'Failed to log out. Please try again.');
-    }
   };
 
   const handleDelete = (link: LinkType) => {
@@ -142,11 +131,14 @@ export default function TabOneScreen() {
             />
             <ThemedText style={styles.headerTitle}>Quibit</ThemedText>
           </View>
-          <TouchableOpacity 
-            style={styles.logoutButton}
-            onPress={handleLogout}
+          <TouchableOpacity
+            style={styles.headerFab}
+            onPress={() => {
+              setEditingLink(null);
+              setShowAddModal(true);
+            }}
           >
-            <ThemedText style={styles.logoutText}>Logout</ThemedText>
+            <ThemedText style={styles.fabText}>+</ThemedText>
           </TouchableOpacity>
         </View>
 
@@ -194,16 +186,6 @@ export default function TabOneScreen() {
               }
             />
           )}
-
-          <TouchableOpacity
-            style={styles.fab}
-            onPress={() => {
-              setEditingLink(null);
-              setShowAddModal(true);
-            }}
-          >
-            <ThemedText style={styles.fabText}>+</ThemedText>
-          </TouchableOpacity>
         </View>
 
         <Modal
@@ -355,7 +337,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 16,
-    paddingTop: 0,
+    paddingTop: 16,
   },
   headerLeft: {
     flexDirection: 'row',
@@ -370,41 +352,27 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
   },
-  logoutButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
-    backgroundColor: '#f0f0f0',
-  },
-  logoutText: {
-    color: '#007AFF',
-    fontWeight: '600',
-  },
-  fab: {
-    position: 'absolute',
-    right: 16,
-    bottom: 60,
-    width: 60, // Slightly larger
-    height: 60, // Slightly larger
-    borderRadius: 30,
-    backgroundColor: '#007AFF',
+  headerFab: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#4B7BEC',
     alignItems: 'center',
     justifyContent: 'center',
-    elevation: 8, // Increased elevation
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
-      height: 4,
+      height: 2,
     },
-    shadowOpacity: 0.3,
-    shadowRadius: 4.65,
-    zIndex: 999,
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   fabText: {
     color: '#fff',
-    fontSize: 32, // Larger font size
-    fontWeight: '500',
-    lineHeight: 32, // Add this to help with vertical centering
+    fontSize: 24,
+    fontWeight: '400',
+    lineHeight: 28,
   },
   modalContainer: {
     flex: 1,
