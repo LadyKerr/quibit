@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { StyleSheet, TouchableOpacity, TextInput, Alert } from 'react-native';
+import { StyleSheet, TouchableOpacity, TextInput, Alert, Image } from 'react-native';
 import { router } from 'expo-router';
 import { ThemedView } from '../../components/ThemedView';
 import { ThemedText } from '../../components/ThemedText';
@@ -50,6 +50,12 @@ export default function CategoriesScreen() {
 
   return (
     <ThemedView style={styles.container}>
+
+<Image 
+        source={require('../../assets/images/quibit-logo-transparent.png')}
+        style={styles.logo}
+        resizeMode="contain"
+      />
       <ThemedText style={styles.title}>Choose Your Categories</ThemedText>
       
       <ThemedText style={styles.description}>
@@ -98,7 +104,7 @@ export default function CategoriesScreen() {
         style={styles.skipButton}
         onPress={handleComplete}
       >
-        <ThemedText style={styles.skipButtonText}>Skip for now</ThemedText>
+        {/* <ThemedText style={styles.skipButtonText}>Skip for now</ThemedText> */}
       </TouchableOpacity>
     </ThemedView>
   );
@@ -107,11 +113,19 @@ export default function CategoriesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    justifyContent: 'center',
     padding: 24,
+  },
+  logo: {
+    width: 120,
+    height: 120,
+    marginBottom: 16,
+    alignSelf: 'center',
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
+    paddingTop: 10,
     marginBottom: 16,
     textAlign: 'center',
   },

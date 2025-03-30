@@ -15,14 +15,14 @@ export default function WelcomeScreen() {
       <ThemedText style={styles.title}>Welcome to Quibit</ThemedText>
       
       <ThemedText style={styles.description}>
-        Your personal space for saving and organizing content from around the web.
+      Capture what matters — ideas, links, voice notes—all in one place. ✨
       </ThemedText>
       
       <ThemedView style={styles.features}>
-        <ThemedText style={styles.featureText}>• Save and categorize links</ThemedText>
-        <ThemedText style={styles.featureText}>• Record voice notes</ThemedText>
-        <ThemedText style={styles.featureText}>• Get searchable transcripts</ThemedText>
-        <ThemedText style={styles.featureText}>• Access everything offline</ThemedText>
+        <ThemedText style={styles.featureText}>📎 Save links & thoughts you love </ThemedText>
+        <ThemedText style={styles.featureText}>🎤 Add notes or record voice memos </ThemedText>
+        <ThemedText style={styles.featureText}>🧠 Search your transcripts instantly</ThemedText>
+        <ThemedText style={styles.featureText}>📶 Access everything offline</ThemedText>
       </ThemedView>
 
       <TouchableOpacity 
@@ -45,11 +45,12 @@ const styles = StyleSheet.create({
   logo: {
     width: 120,
     height: 120,
-    marginBottom: 32,
+    marginBottom: 16,
   },
   title: {
     fontSize: 32,
     fontWeight: 'bold',
+    paddingTop: 10,
     marginBottom: 16,
     textAlign: 'center',
   },
