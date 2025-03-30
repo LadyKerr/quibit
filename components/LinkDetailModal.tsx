@@ -3,6 +3,7 @@ import { StyleSheet, Modal, TouchableOpacity, View, SafeAreaView, ScrollView } f
 import { Link } from '../hooks/useLinks';
 import { ThemedView } from './ThemedView';
 import { ThemedText } from './ThemedText';
+import { CATEGORY_COLORS } from './CategoryButtons';
 
 interface LinkDetailModalProps {
   link: Link;
@@ -36,6 +37,8 @@ export function LinkDetailModal({
     }
   };
 
+  const categoryColors = CATEGORY_COLORS[link.category] || CATEGORY_COLORS.Other;
+
   return (
     <Modal
       visible={visible}
@@ -67,8 +70,14 @@ export function LinkDetailModal({
 
           <View style={styles.section}>
             <ThemedText style={styles.sectionTitle}>Category</ThemedText>
-            <View style={styles.categoryBadge}>
-              <ThemedText style={styles.categoryText}>{link.category}</ThemedText>
+            <View style={[
+              styles.categoryBadge,
+              { backgroundColor: categoryColors.background }
+            ]}>
+              <ThemedText style={[
+                styles.categoryText,
+                { color: categoryColors.text }
+              ]}>{link.category}</ThemedText>
             </View>
           </View>
 
@@ -160,7 +169,6 @@ const styles = StyleSheet.create({
     textDecorationLine: 'underline',
   },
   categoryBadge: {
-    backgroundColor: '#e3f2fd',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 12,
@@ -168,7 +176,6 @@ const styles = StyleSheet.create({
   },
   categoryText: {
     fontSize: 15,
-    color: '#0a7ea4',
     fontWeight: '500',
   },
   notes: {

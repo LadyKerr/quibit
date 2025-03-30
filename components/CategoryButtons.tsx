@@ -2,6 +2,16 @@ import React from 'react';
 import { ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
 import { ThemedText } from './ThemedText';
 
+// Map of category to pastel colors
+export const CATEGORY_COLORS: { [key: string]: { background: string; text: string } } = {
+  Video: { background: '#FFE2E2', text: '#D35D6E' },  // Pastel red
+  Blog: { background: '#E2F0CB', text: '#7BA05B' },   // Pastel green
+  Tutorial: { background: '#FFE5B4', text: '#CC8B3C' }, // Pastel orange
+  Article: { background: '#CBE2F0', text: '#3B7B9A' }, // Pastel blue
+  Other: { background: '#E2D5F0', text: '#8860B9' },   // Pastel purple
+  All: { background: '#F0F0F0', text: '#666666' },     // Gray for "All" category
+};
+
 interface CategoryButtonsProps {
   categories: string[];
   selectedCategory: string;
@@ -19,6 +29,10 @@ export function CategoryButtons({
   showNewButton = false,
   style
 }: CategoryButtonsProps) {
+  const getCategoryColors = (category: string) => {
+    return CATEGORY_COLORS[category] || { background: '#F0F0F0', text: '#666666' };
+  };
+
   return (
     <ScrollView 
       horizontal 
@@ -26,27 +40,35 @@ export function CategoryButtons({
       style={[styles.categoryList, style]}
       contentContainerStyle={styles.contentContainer}
     >
-      {categories.map((cat) => (
-        <TouchableOpacity
-          key={cat}
-          style={[
-            styles.categoryButton,
-            selectedCategory === cat && styles.categoryButtonActive
-          ]}
-          onPress={() => onSelectCategory(cat)}
-        >
-          <ThemedText style={[
-            styles.categoryButtonText,
-            selectedCategory === cat && styles.categoryButtonTextActive
-          ]}>{cat}</ThemedText>
-        </TouchableOpacity>
-      ))}
+      {categories.map((cat) => {
+        const colors = getCategoryColors(cat);
+        const isSelected = selectedCategory === cat;
+        return (
+          <TouchableOpacity
+            key={cat}
+            style={[
+              styles.categoryButton,
+              { backgroundColor: colors.background },
+              isSelected && styles.categoryButtonActive,
+              isSelected && { backgroundColor: colors.background }
+            ]}
+            onPress={() => onSelectCategory(cat)}
+          >
+            <ThemedText style={[
+              styles.categoryButtonText,
+              { color: colors.text },
+              isSelected && styles.categoryButtonTextActive,
+              isSelected && { color: colors.text }
+            ]}>{cat}</ThemedText>
+          </TouchableOpacity>
+        )
+      })}
       {showNewButton && (
         <TouchableOpacity
           style={[styles.categoryButton, styles.newCategoryButton]}
           onPress={onNewCategory}
         >
-          <ThemedText style={styles.categoryButtonText}>+ New Category</ThemedText>
+          <ThemedText style={styles.newCategoryButtonText}>+ New Category</ThemedText>
         </TouchableOpacity>
       )}
     </ScrollView>
@@ -65,20 +87,25 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 16,
-    backgroundColor: '#f0f0f0',
     marginRight: 8,
   },
   categoryButtonActive: {
-    backgroundColor: '#007AFF',
+    borderWidth: 2,
+    borderColor: 'rgba(0,0,0,0.1)',
   },
   categoryButtonText: {
-    color: '#666',
     fontSize: 14,
+    fontWeight: '500',
   },
   categoryButtonTextActive: {
-    color: '#fff',
+    fontWeight: '600',
   },
   newCategoryButton: {
     backgroundColor: '#e3f2fd',
+  },
+  newCategoryButtonText: {
+    color: '#0a7ea4',
+    fontSize: 14,
+    fontWeight: '500',
   },
 });

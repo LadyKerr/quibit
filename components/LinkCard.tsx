@@ -4,6 +4,7 @@ import { Link } from '../hooks/useLinks';
 import { ThemedText } from './ThemedText';
 import { ThemedView } from './ThemedView';
 import { LinkDetailModal } from './LinkDetailModal';
+import { CATEGORY_COLORS } from './CategoryButtons';
 
 // Map of category to emoji icons
 const CATEGORY_ICONS: { [key: string]: string } = {
@@ -43,6 +44,7 @@ export function LinkCard({ link, onEdit, onPress, onDelete }: LinkCardProps) {
   };
 
   const categoryIcon = CATEGORY_ICONS[link.category] || CATEGORY_ICONS.Other;
+  const categoryColors = CATEGORY_COLORS[link.category] || CATEGORY_COLORS.Other;
 
   return (
     <>
@@ -54,8 +56,20 @@ export function LinkCard({ link, onEdit, onPress, onDelete }: LinkCardProps) {
                 {categoryIcon} {link.title}
               </ThemedText>
             </View>
-            <View style={styles.categoryBadge}>
-              <ThemedText style={styles.categoryText}>{link.category}</ThemedText>
+            <View
+              style={[
+                styles.categoryBadge,
+                { backgroundColor: categoryColors.background },
+              ]}
+            >
+              <ThemedText
+                style={[
+                  styles.categoryText,
+                  { color: categoryColors.text },
+                ]}
+              >
+                {link.category}
+              </ThemedText>
             </View>
           </View>
 
@@ -93,19 +107,25 @@ export function LinkCard({ link, onEdit, onPress, onDelete }: LinkCardProps) {
               style={styles.iconButton}
               onPress={() => onPress(link.url)}
             >
-              <ThemedText style={styles.iconText}>{ACTION_ICONS.visit}</ThemedText>
+              <ThemedText style={styles.iconText}>
+                {ACTION_ICONS.visit}
+              </ThemedText>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.iconButton}
               onPress={() => onEdit(link)}
             >
-              <ThemedText style={styles.iconText}>{ACTION_ICONS.edit}</ThemedText>
+              <ThemedText style={styles.iconText}>
+                {ACTION_ICONS.edit}
+              </ThemedText>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.iconButton}
               onPress={() => onDelete(link)}
             >
-              <ThemedText style={styles.iconText}>{ACTION_ICONS.delete}</ThemedText>
+              <ThemedText style={styles.iconText}>
+                {ACTION_ICONS.delete}
+              </ThemedText>
             </TouchableOpacity>
           </View>
         </ThemedView>
@@ -160,14 +180,12 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
   categoryBadge: {
-    backgroundColor: '#e3f2fd',
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
   },
   categoryText: {
     fontSize: 12,
-    color: '#0a7ea4',
     fontWeight: '500',
   },
   content: {
