@@ -58,6 +58,7 @@ interface LinkFormProps {
     url: string;
     category: string;
     notes: string | null;
+    created_at?: string;
   }) => Promise<void>;
   onCancel?: () => void;
   initialData?: Partial<Link>;
@@ -97,11 +98,15 @@ export function LinkForm({
     }
 
     try {
+      // Add timestamp at submission time
+      const now = new Date().toISOString();
+      
       await onSubmit({
         title: title.trim(),
         url: processedUrl,
         category: category.trim() || 'Other',
         notes: notes.trim() || null,
+        created_at: now // Add this
       });
     } catch (error) {
       if (error instanceof Error && error.message.includes('rate limit')) {

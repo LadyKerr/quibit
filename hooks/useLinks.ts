@@ -107,16 +107,8 @@ export const useLinks = () => {
     if (!session?.user) return false;
 
     try {
-      // First try to insert a submission attempt
-      const { error: attemptError } = await supabase
-        .from('submission_attempts')
-        .insert([{ user_id: session.user.id }]);
-
-      if (attemptError) {
-        throw new Error('Rate limit exceeded. Please try again later.');
-      }
-
-      // If attempt logged successfully, try to insert the link
+      const now = new Date().toISOString();
+      
       const { data, error } = await supabase
         .from('links')
         .insert([
@@ -126,7 +118,8 @@ export const useLinks = () => {
             category,
             notes,
             user_id: session.user.id,
-          },
+            created_at: now // Explicitly set the timestamp
+          }
         ])
         .select()
         .single();
