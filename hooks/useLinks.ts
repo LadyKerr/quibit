@@ -157,6 +157,92 @@ export const useLinks = () => {
     }
   };
 
+  const deleteCategory = async (name: string) => {
+    if (!session?.user) return false;
+
+    try {
+      // Check if it's a default category
+      const { data: defaultCheck } = await supabase
+        .from('default_categories')
+        .select('name')
+        .eq('name', name)
+        .single();
+
+      if (defaultCheck) {
+        return { success: false, error: 'Cannot delete default categories' };
+      }
+
+      // Delete the category
+      const { error } = await supabase
+        .from('categories')
+        .delete()
+        .eq('name', name)
+        .eq('user_id', session.user.id);
+
+      if (error) throw error;
+
+      // Update categories state
+      setCategories(prev => prev.filter(cat => cat !== name));
+      return { success: true };
+    } catch (error) {
+      console.error('Error deleting category:', error);
+      return { success: false, error: 'Failed to delete category' };
+    }
+  };
+
+  const editCategory = async (oldName: string, newName: string) => {
+    if (!session?.user) return { success: false, error: 'Not authenticated' };
+    if (oldName === newName) return { success: true };
+
+    try {
+      // Check if it's a default category
+      const { data: defaultCheck } = await supabase
+        .from('default_categories')
+        .select('name')
+        .eq('name', oldName)
+        .single();
+
+      if (defaultCheck) {
+        return { success: false, error: 'Cannot edit default categories' };
+      }
+
+      // Check if new name already exists
+      const { data: existingCheck } = await supabase
+        .from('categories')
+        .select('name')
+        .eq('name', newName)
+        .single();
+
+      if (existingCheck) {
+        return { success: false, error: 'Category name already exists' };
+      }
+
+      // Update the category
+      const { error } = await supabase
+        .from('categories')
+        .update({ name: newName })
+        .eq('name', oldName)
+        .eq('user_id', session.user.id);
+
+      if (error) throw error;
+
+      // Update categories state
+      setCategories(prev => prev.map(cat => cat === oldName ? newName : cat).sort());
+
+      // Update all links with this category
+      await supabase
+        .from('links')
+        .update({ category: newName })
+        .eq('category', oldName)
+        .eq('user_id', session.user.id);
+
+      return { success: true };
+    } catch (error) {
+      console.error('Error editing category:', error);
+      return { success: false, error: 'Failed to edit category' };
+    }
+  };
+
   const editLink = async (
     id: string,
     updates: Partial<Omit<Link, 'id' | 'created_at' | 'user_id'>>
@@ -233,6 +319,8 @@ export const useLinks = () => {
     editLink,
     deleteLink,
     addCategory,
+    deleteCategory,
+    editCategory,
     categories,
     searchQuery,
     setSearchQuery,

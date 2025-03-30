@@ -35,12 +35,22 @@ export default function SettingsScreen() {
       </View>
 
       <View style={styles.section}>
-        <ThemedText style={styles.sectionTitle}>See you soon 👋🏽</ThemedText>
+        <ThemedText style={styles.sectionTitle}>Customization</ThemedText>
         <TouchableOpacity
-          style={styles.button}
+          style={styles.settingButton}
+          onPress={() => router.push('/manage-categories')}
+        >
+          <ThemedText style={styles.settingButtonText}>Manage Categories</ThemedText>
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.section}>
+        <ThemedText style={styles.sectionTitle}>Account</ThemedText>
+        <TouchableOpacity
+          style={styles.logoutButton}
           onPress={handleLogout}
         >
-          <ThemedText style={styles.buttonText}>Log Out</ThemedText>
+          <ThemedText style={styles.logoutButtonText}>Log Out</ThemedText>
         </TouchableOpacity>
       </View>
     </ThemedView>
@@ -86,13 +96,24 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginBottom: 16,
   },
-  button: {
+  settingButton: {
+    backgroundColor: '#007AFF',
+    padding: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  settingButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  logoutButton: {
     backgroundColor: '#ff3b30',
     padding: 16,
     borderRadius: 12,
     alignItems: 'center',
   },
-  buttonText: {
+  logoutButtonText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
