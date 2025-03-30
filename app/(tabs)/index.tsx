@@ -12,12 +12,14 @@ import {
   Modal,
   Alert,
 } from 'react-native';
-import { useLinks, Link, SortOrder } from '../../hooks/useLinks';
+import { useLinks, SortOrder } from '../../hooks/useLinks';
+import type { Link as LinkType } from '../../hooks/useLinks';
 import { ThemedView } from '../../components/ThemedView';
 import { ThemedText } from '../../components/ThemedText';
 import { CategoryButtons } from '../../components/CategoryButtons';
 import { LinkCard } from '../../components/LinkCard';
 import { useAuth } from '../../contexts/AuthContext';
+import { router } from 'expo-router';
 
 export default function TabOneScreen() {
   const { 
@@ -100,7 +102,7 @@ export default function TabOneScreen() {
     }
   };
 
-  const handleEdit = (link: Link) => {
+  const handleEdit = (link: LinkType) => {
     setTitle(link.title);
     setUrl(link.url);
     setCategory(link.category);
@@ -135,13 +137,13 @@ export default function TabOneScreen() {
   const handleLogout = async () => {
     try {
       await signOut();
-      router.replace('/login');
     } catch (error) {
-      Alert.alert('Error', 'Failed to log out');
+      console.error('Logout error:', error);
+      Alert.alert('Error', 'Failed to log out. Please try again.');
     }
   };
 
-  const renderItem = ({ item }: { item: Link }) => (
+  const renderItem = ({ item }: { item: LinkType }) => (
     <LinkCard
       link={item}
       onEdit={handleEdit}
