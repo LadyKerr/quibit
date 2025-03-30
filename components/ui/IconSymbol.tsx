@@ -13,7 +13,7 @@ const MAPPING = {
   'chevron.right': 'chevron-right',
   'gear': 'settings', // This maps 'tools' to the MaterialIcons 'settings' icon
   'mic': 'mic',
-  'notebook': 'book',
+  'notebook': 'description', // Change from 'note' to 'description'
 } as Partial<
   Record<
     import('expo-symbols').SymbolViewProps['name'],
