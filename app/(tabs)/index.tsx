@@ -11,6 +11,7 @@ import {
   ScrollView,
   Modal,
   Alert,
+  Image,
 } from 'react-native';
 import { useLinks, SortOrder } from '../../hooks/useLinks';
 import type { Link as LinkType } from '../../hooks/useLinks';
@@ -191,7 +192,13 @@ export default function TabOneScreen() {
     <SafeAreaView style={styles.safeArea}>
       <ThemedView style={styles.container}>
         <View style={styles.header}>
-          <ThemedText style={styles.headerTitle}>Quibit</ThemedText>
+          <View style={styles.headerLeft}>
+            <Image 
+              source={require('../../assets/images/icon.png')}
+              style={styles.headerIcon}
+            />
+            <ThemedText style={styles.headerTitle}>Quibit</ThemedText>
+          </View>
           <TouchableOpacity 
             style={styles.logoutButton}
             onPress={handleLogout}
@@ -569,6 +576,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 16,
     paddingTop: 0,
+  },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  headerIcon: {
+    width: 60,
+    height: 60,
+    marginRight: 0,
   },
   headerTitle: {
     fontSize: 24,

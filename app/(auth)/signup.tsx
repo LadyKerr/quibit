@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { StyleSheet, TextInput, TouchableOpacity, Alert } from 'react-native';
+import { StyleSheet, TextInput, TouchableOpacity, Alert, Image } from 'react-native';
 import { Link, router } from 'expo-router';
 import { ThemedView } from '../../components/ThemedView';
 import { ThemedText } from '../../components/ThemedText';
@@ -35,38 +35,53 @@ export default function SignupScreen() {
 
   return (
     <ThemedView style={styles.container}>
+      <Image 
+        source={require('../../assets/images/quibit-logo-transparent.png')}
+        style={styles.logo}
+        resizeMode="contain"
+      />
+      
       <ThemedText style={styles.title}>Create Account</ThemedText>
-      
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-        autoCapitalize="none"
-        keyboardType="email-address"
-      />
-      
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
-      
-      <TouchableOpacity
-        style={[styles.button, loading && styles.buttonDisabled]}
-        onPress={handleSignup}
-        disabled={loading}
-      >
-        <ThemedText style={styles.buttonText}>
-          {loading ? 'Creating account...' : 'Sign Up'}
-        </ThemedText>
-      </TouchableOpacity>
+      <ThemedText style={styles.subtitle}>Join Quibit and start organizing your digital life ✨</ThemedText>
 
-      <Link href="/login" style={styles.link}>
-        <ThemedText>Already have an account? Sign in</ThemedText>
-      </Link>
+      <ThemedView style={styles.formContainer}>
+        <ThemedText style={styles.label}>Email</ThemedText>
+        <TextInput
+          style={styles.input}
+          placeholder="your@email.com"
+          value={email}
+          onChangeText={setEmail}
+          autoCapitalize="none"
+          keyboardType="email-address"
+          placeholderTextColor="#999"
+        />
+        
+        <ThemedText style={styles.label}>Password</ThemedText>
+        <TextInput
+          style={styles.input}
+          placeholder="••••••••"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+          placeholderTextColor="#999"
+        />
+
+        <TouchableOpacity
+          style={[styles.button, loading && styles.buttonDisabled]}
+          onPress={handleSignup}
+          disabled={loading}
+        >
+          <ThemedText style={styles.buttonText}>
+            {loading ? 'Creating account...' : 'Sign Up'}
+          </ThemedText>
+        </TouchableOpacity>
+
+        <Link href="/login" style={styles.loginLink}>
+          <ThemedText style={styles.loginText}>
+            Already have an account? <ThemedText style={styles.loginHighlight}>Log In</ThemedText>
+          </ThemedText>
+        </Link>
+      </ThemedView>
     </ThemedView>
   );
 }
@@ -74,39 +89,72 @@ export default function SignupScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    padding: 24,
+    alignItems: 'center',
     justifyContent: 'center',
   },
+  logo: {
+    width: 120,  // Increased from 80
+    height: 120, // Increased from 80
+    marginBottom: 16, // Increased from 16
+  },
   title: {
-    fontSize: 24,
+    fontSize: 32,
     fontWeight: 'bold',
-    marginBottom: 20,
-    textAlign: 'center',
+    paddingTop: 10,
+    marginBottom: 8,
+    textAlign: 'center', // Added for consistency
+  },
+  subtitle: {
+    fontSize: 18,
+    color: '#666',
+    marginBottom: 48,
+    textAlign: 'center', // Added to center the subtitle
+    paddingHorizontal: 20, // Added to control line length
+  },
+  formContainer: {
+    width: '100%',
+    maxWidth: 400,
+  },
+  label: {
+    fontSize: 16,
+    marginBottom: 8,
+    fontWeight: '500',
   },
   input: {
-    backgroundColor: '#f0f0f0',
-    padding: 15,
-    borderRadius: 8,
-    marginBottom: 12,
+    backgroundColor: '#f5f5f5',
+    padding: 16,
+    borderRadius: 12,
     fontSize: 16,
+    marginBottom: 16,
+    width: '100%',
   },
   button: {
-    backgroundColor: '#007AFF',
-    padding: 15,
-    borderRadius: 8,
+    backgroundColor: '#4B7BEC',
+    padding: 16,
+    borderRadius: 12,
     alignItems: 'center',
-    marginTop: 10,
+    marginTop: 8,
   },
   buttonDisabled: {
-    backgroundColor: '#ccc',
+    backgroundColor: '#A5B1C2',
   },
   buttonText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
   },
-  link: {
-    marginTop: 20,
-    alignSelf: 'center',
+  loginLink: {
+    marginTop: 24,
+    alignItems: 'center',
+  },
+  loginText: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
+  },
+  loginHighlight: {
+    color: '#4B7BEC',
+    fontWeight: '600',
   },
 });

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { StyleSheet, TextInput, TouchableOpacity, Alert } from 'react-native';
+import { StyleSheet, TextInput, TouchableOpacity, Alert, Image } from 'react-native';
 import { Link, router } from 'expo-router';
 import { ThemedView } from '../../components/ThemedView';
 import { ThemedText } from '../../components/ThemedText';
@@ -31,38 +31,55 @@ export default function LoginScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <ThemedText style={styles.title}>Welcome Back</ThemedText>
-      
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-        autoCapitalize="none"
-        keyboardType="email-address"
+      <Image 
+        source={require('../../assets/images/quibit-logo-transparent.png')}
+        style={styles.logo}
+        resizeMode="contain"
       />
-      
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
-      
-      <TouchableOpacity
-        style={[styles.button, loading && styles.buttonDisabled]}
-        onPress={handleLogin}
-        disabled={loading}
-      >
-        <ThemedText style={styles.buttonText}>
-          {loading ? 'Signing in...' : 'Sign In'}
-        </ThemedText>
-      </TouchableOpacity>
+      <ThemedText style={styles.subtitle}>Your personal digital brain 🧠</ThemedText>
 
-      <Link href="/signup" style={styles.link}>
-        <ThemedText>Don't have an account? Sign up</ThemedText>
-      </Link>
+      <ThemedView style={styles.formContainer}>
+        <ThemedText style={styles.label}>Email</ThemedText>
+        <TextInput
+          style={styles.input}
+          placeholder="your@email.com"
+          value={email}
+          onChangeText={setEmail}
+          autoCapitalize="none"
+          keyboardType="email-address"
+          placeholderTextColor="#999"
+        />
+        
+        <ThemedText style={styles.label}>Password</ThemedText>
+        <TextInput
+          style={styles.input}
+          placeholder="••••••••"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+          placeholderTextColor="#999"
+        />
+        
+        <Link href="/signup" style={styles.forgotPassword}>
+          <ThemedText style={styles.forgotPasswordText}>Forgot password?</ThemedText>
+        </Link>
+
+        <TouchableOpacity
+          style={[styles.button, loading && styles.buttonDisabled]}
+          onPress={handleLogin}
+          disabled={loading}
+        >
+          <ThemedText style={styles.buttonText}>
+            {loading ? 'Signing in...' : 'Log In'}
+          </ThemedText>
+        </TouchableOpacity>
+
+        <Link href="/signup" style={styles.signupLink}>
+          <ThemedText style={styles.signupText}>
+            Don't have an account? <ThemedText style={styles.signupHighlight}>Sign Up</ThemedText>
+          </ThemedText>
+        </Link>
+      </ThemedView>
     </ThemedView>
   );
 }
@@ -70,39 +87,77 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    padding: 24,
+    alignItems: 'center',
     justifyContent: 'center',
   },
+  logo: {
+    width: 120,
+    height: 120,
+    marginBottom: 0,
+  },
   title: {
-    fontSize: 24,
+    fontSize: 32,
     fontWeight: 'bold',
-    marginBottom: 20,
-    textAlign: 'center',
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 18,
+    color: '#666',
+    marginBottom: 48,
+  },
+  formContainer: {
+    width: '100%',
+    maxWidth: 400,
+  },
+  label: {
+    fontSize: 16,
+    marginBottom: 8,
+    fontWeight: '500',
   },
   input: {
-    backgroundColor: '#f0f0f0',
-    padding: 15,
-    borderRadius: 8,
-    marginBottom: 12,
+    backgroundColor: '#f5f5f5',
+    padding: 16,
+    borderRadius: 12,
     fontSize: 16,
+    marginBottom: 16,
+    width: '100%',
   },
   button: {
-    backgroundColor: '#007AFF',
-    padding: 15,
-    borderRadius: 8,
+    backgroundColor: '#4B7BEC',
+    padding: 16,
+    borderRadius: 12,
     alignItems: 'center',
-    marginTop: 10,
+    marginTop: 8,
   },
   buttonDisabled: {
-    backgroundColor: '#ccc',
+    backgroundColor: '#A5B1C2',
   },
   buttonText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
   },
-  link: {
-    marginTop: 20,
-    alignSelf: 'center',
+  forgotPassword: {
+    alignSelf: 'flex-end',
+    marginTop: -8,
+    marginBottom: 24,
+  },
+  forgotPasswordText: {
+    color: '#4B7BEC',
+    fontSize: 14,
+  },
+  signupLink: {
+    marginTop: 24,
+    alignItems: 'center',
+  },
+  signupText: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
+  },
+  signupHighlight: {
+    color: '#4B7BEC',
+    fontWeight: '600',
   },
 });
