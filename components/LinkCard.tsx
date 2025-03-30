@@ -204,7 +204,7 @@ const styles = StyleSheet.create({
   },
   notesButton: {
     paddingVertical: 8,
-    marginBottom: 8,
+    marginBottom: 0,
   },
   notesButtonText: {
     fontSize: 14,
@@ -226,10 +226,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'flex-end',
     gap: 16,
-    marginTop: 8,
+    marginTop: 0,
   },
   iconButton: {
-    padding: 8,
+    padding: 4,
   },
   iconText: {
     fontSize: 20,
