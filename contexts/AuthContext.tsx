@@ -8,6 +8,7 @@ interface Profile {
   email: string;
   created_at: string;
   updated_at: string;
+  onboarding_completed: boolean;
 }
 
 type AuthContextData = {
@@ -25,19 +26,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<Profile | null>(null);
-
-  useEffect(() => {
-    // Check active session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setLoading(false);
-    });
-
-    // Listen for auth changes
-    supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-    });
-  }, []);
 
   const loadProfile = async () => {
     if (!session?.user) return;
@@ -57,7 +45,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             id: session.user.id,
             email: session.user.email,
             created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
+            updated_at: new Date().toISOString(),
+            onboarding_completed: false // Add this line
           }], {
             onConflict: 'id'
           })
@@ -77,8 +66,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
-    loadProfile();
-  }, [session?.user?.id]);
+    let mounted = true;
+
+    // Check active session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (mounted) {
+        setSession(session);
+        setLoading(false);
+        if (session?.user) {
+          loadProfile();
+        }
+      }
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (mounted) {
+        setSession(session);
+        if (session?.user) {
+          loadProfile();
+        }
+      }
+    });
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, []);
 
   const signUp = async (email: string, password: string) => {
     const { error } = await supabase.auth.signUp({

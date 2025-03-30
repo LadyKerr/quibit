@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   StyleSheet,
   TextInput,
@@ -44,6 +44,17 @@ export default function TabOneScreen() {
   const [showNewCategoryModal, setShowNewCategoryModal] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [editingLink, setEditingLink] = useState<LinkType | null>(null);
+
+  const { session } = useAuth();
+
+  useEffect(() => {
+    console.log('Session state:', {
+      hasSession: !!session,
+      userId: session?.user?.id,
+      loading,
+      linksCount: links.length
+    });
+  }, [session, loading, links]);
 
   const handleCreateCategory = async () => {
     const trimmedCategory = newCategoryName.trim();
@@ -170,8 +181,13 @@ export default function TabOneScreen() {
             />
           </View>
 
-          {loading ? (
-            <ActivityIndicator style={styles.loading} />
+          {loading || !session ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#007AFF" />
+              <ThemedText style={styles.loadingText}>
+                {!session ? 'Connecting...' : 'Loading your links...'}
+              </ThemedText>
+            </View>
           ) : (
             <FlatList
               data={links}
@@ -441,5 +457,16 @@ const styles = StyleSheet.create({
   },
   cancelButton: {
     backgroundColor: '#6c757d',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 16,
+    color: '#666',
   },
 });

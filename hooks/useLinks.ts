@@ -26,27 +26,48 @@ export const useLinks = () => {
   const { session } = useAuth();
 
   useEffect(() => {
-    if (session?.user) {
-      loadLinks();
-      loadCategories();
-    }
+    const loadData = async () => {
+      if (session?.user?.id) {
+        try {
+          setLoading(true);
+          await Promise.all([loadLinks(), loadCategories()]);
+        } catch (error) {
+          console.error('Error loading data:', error);
+        } finally {
+          setLoading(false);
+        }
+      } else {
+        setLinks([]);
+        setCategories(DEFAULT_CATEGORIES);
+        setLoading(false); // Make sure to set loading to false when there's no session
+      }
+    };
+
+    loadData();
   }, [session?.user?.id]);
 
   const loadLinks = async () => {
     try {
-      setLoading(true);
+      console.log('Loading links for user:', session?.user?.id);
+
       const { data, error } = await supabase
         .from('links')
         .select('*')
         .eq('user_id', session?.user?.id)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
+
+      console.log('Loaded links:', data?.length || 0);
       setLinks(data || []);
+      return data;
     } catch (error) {
       console.error('Error loading links:', error);
-    } finally {
-      setLoading(false);
+      setLinks([]);
+      throw error;
     }
   };
 

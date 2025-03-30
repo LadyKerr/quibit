@@ -22,8 +22,11 @@ export default function SignupScreen() {
       } else {
         Alert.alert(
           'Success',
-          'Registration successful! Please check your email to confirm your account.',
-          [{ text: 'OK', onPress: () => router.replace('/(tabs)') }]
+          'Registration successful! Please log in to continue.',
+          [{ 
+            text: 'OK', 
+            onPress: () => router.replace('/login') // Changed from /(tabs)
+          }]
         );
       }
     } catch (error) {

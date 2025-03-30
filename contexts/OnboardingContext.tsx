@@ -40,12 +40,24 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
 
   const initializeOnboarding = async () => {
     try {
-      const [status, savedCategories] = await Promise.all([
-        AsyncStorage.getItem(ONBOARDING_COMPLETE_KEY),
-        AsyncStorage.getItem(USER_CATEGORIES_KEY),
-      ]);
+      if (!session?.user?.id) {
+        setHasCompletedOnboarding(false);
+        return;
+      }
 
-      setHasCompletedOnboarding(!!status);
+      // Get status from Supabase
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('onboarding_completed')
+        .eq('id', session.user.id)
+        .single();
+
+      if (error) throw error;
+
+      setHasCompletedOnboarding(!!data?.onboarding_completed);
+
+      // Load saved categories
+      const savedCategories = await AsyncStorage.getItem(USER_CATEGORIES_KEY);
       if (savedCategories) {
         setCategories([...DEFAULT_CATEGORIES, ...JSON.parse(savedCategories)]);
       }
@@ -57,9 +69,20 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
   };
 
   const completeOnboarding = async () => {
+    if (!session?.user?.id) return;
+
     try {
       setIsLoading(true);
-      await AsyncStorage.setItem(ONBOARDING_COMPLETE_KEY, 'true');
+      
+      // Update Supabase
+      const { error } = await supabase
+        .from('profiles')
+        .update({ onboarding_completed: true })
+        .eq('id', session.user.id);
+
+      if (error) throw error;
+
+      // Update local state
       setHasCompletedOnboarding(true);
     } catch (error) {
       console.error('Error completing onboarding:', error);
@@ -103,9 +126,21 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
   };
 
   const resetOnboarding = async () => {
+    if (!session?.user?.id) return;
+
     try {
       setIsLoading(true);
-      await AsyncStorage.multiRemove([ONBOARDING_COMPLETE_KEY, USER_CATEGORIES_KEY]);
+
+      // Reset in Supabase
+      const { error } = await supabase
+        .from('profiles')
+        .update({ onboarding_completed: false })
+        .eq('id', session.user.id);
+
+      if (error) throw error;
+
+      // Reset local state
+      await AsyncStorage.multiRemove([USER_CATEGORIES_KEY]);
       setHasCompletedOnboarding(false);
       setCategories(DEFAULT_CATEGORIES);
     } catch (error) {

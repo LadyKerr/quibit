@@ -60,28 +60,28 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
+    padding: 12,
   },
   header: {
-    paddingTop: 60,
-    marginBottom: 32,
+    paddingTop: 40,
+    marginBottom: 24,
     alignItems: 'center',
   },
   logo: {
-    width: 120,
-    height: 120,
-    marginBottom: 16,
+    width: 80,
+    height: 80,
+    marginBottom: 12,
   },
   title: {
-    fontSize: 34,
+    fontSize: 28,
     fontWeight: 'bold',
-    paddingTop: 20,
+    paddingTop: 12,
   },
   section: {
     backgroundColor: 'white',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 24,
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 16,
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
@@ -92,30 +92,30 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: 17,
     fontWeight: '600',
-    marginBottom: 16,
+    marginBottom: 12,
   },
   settingButton: {
     backgroundColor: '#007AFF',
-    padding: 16,
-    borderRadius: 12,
+    padding: 12,
+    borderRadius: 8,
     alignItems: 'center',
   },
   settingButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
   },
   logoutButton: {
     backgroundColor: '#ff3b30',
-    padding: 16,
-    borderRadius: 12,
+    padding: 12,
+    borderRadius: 8,
     alignItems: 'center',
   },
   logoutButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
   },
 });

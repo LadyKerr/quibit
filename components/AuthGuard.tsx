@@ -21,18 +21,15 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
       router.replace('/login');
     } else if (session) {
       if (inAuthGroup && !isPasswordReset) {
-        // Always check onboarding status after authentication
+        // After successful login, check onboarding status
         if (!hasCompletedOnboarding) {
           router.replace('/(onboarding)/welcome');
         } else {
           router.replace('/(tabs)');
         }
       } else if (!hasCompletedOnboarding && !inOnboardingGroup && !isPasswordReset) {
-        // Ensure users can't bypass onboarding
+        // Ensure users complete onboarding
         router.replace('/(onboarding)/welcome');
-      } else if (hasCompletedOnboarding && inOnboardingGroup) {
-        // Prevent returning to onboarding if completed
-        router.replace('/(tabs)');
       }
     }
   }, [session, loading, segments, hasCompletedOnboarding]);
