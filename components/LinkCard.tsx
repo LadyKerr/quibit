@@ -17,9 +17,10 @@ interface LinkCardProps {
   link: Link;
   onEdit: (link: Link) => void;
   onPress: (url: string) => void;
+  onDelete: (link: Link) => void;
 }
 
-export function LinkCard({ link, onEdit, onPress }: LinkCardProps) {
+export function LinkCard({ link, onEdit, onPress, onDelete }: LinkCardProps) {
   // Extract domain from URL
   const getDomain = (url: string) => {
     try {
@@ -68,6 +69,12 @@ export function LinkCard({ link, onEdit, onPress }: LinkCardProps) {
           onPress={() => onEdit(link)}
         >
           <ThemedText style={styles.buttonText}>Edit</ThemedText>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.button, styles.deleteButton]}
+          onPress={() => onDelete(link)}
+        >
+          <ThemedText style={styles.buttonText}>Delete</ThemedText>
         </TouchableOpacity>
       </View>
     </ThemedView>
@@ -146,6 +153,10 @@ const styles = StyleSheet.create({
   },
   editButton: {
     backgroundColor: '#6c757d',
+    flex: 1,
+  },
+  deleteButton: {
+    backgroundColor: '#dc3545',
     flex: 1,
   },
   buttonText: {

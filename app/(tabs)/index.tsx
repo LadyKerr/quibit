@@ -27,6 +27,7 @@ export default function TabOneScreen() {
     loading, 
     addLink,
     editLink,
+    deleteLink,
     addCategory,
     searchQuery, 
     setSearchQuery,
@@ -143,11 +144,35 @@ export default function TabOneScreen() {
     }
   };
 
+  const handleDelete = (link: LinkType) => {
+    Alert.alert(
+      'Delete Link',
+      `Are you sure you want to delete "${link.title}"?`,
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            const success = await deleteLink(link.id);
+            if (!success) {
+              Alert.alert('Error', 'Failed to delete link. Please try again.');
+            }
+          },
+        },
+      ]
+    );
+  };
+
   const renderItem = ({ item }: { item: LinkType }) => (
     <LinkCard
       link={item}
       onEdit={handleEdit}
       onPress={(url) => Linking.openURL(url)}
+      onDelete={handleDelete}
     />
   );
 

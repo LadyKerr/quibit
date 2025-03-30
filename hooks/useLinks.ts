@@ -175,6 +175,26 @@ export const useLinks = () => {
     }
   };
 
+  const deleteLink = async (id: string) => {
+    if (!session?.user) return false;
+
+    try {
+      const { error } = await supabase
+        .from('links')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', session.user.id);
+
+      if (error) throw error;
+
+      setLinks((prev) => prev.filter((link) => link.id !== id));
+      return true;
+    } catch (error) {
+      console.error('Error deleting link:', error);
+      return false;
+    }
+  };
+
   const filteredLinks = links
     .filter((link) => {
       const matchesSearch =
@@ -196,6 +216,7 @@ export const useLinks = () => {
     loading,
     addLink,
     editLink,
+    deleteLink,
     addCategory,
     categories,
     searchQuery,
