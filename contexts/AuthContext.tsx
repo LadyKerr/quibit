@@ -48,28 +48,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .eq('id', session.user.id)
         .single();
 
-      // If no profile exists, create one
-      if (error?.code === 'PGRST116') {
-        const newProfile = {
-          id: session.user.id,
-          email: session.user.email,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        };
-
+      if (error && error.code === 'PGRST116') {
+        // Profile doesn't exist, create it
         const { data: createdProfile, error: createError } = await supabase
           .from('profiles')
-          .insert([newProfile])
+          .upsert([{
+            id: session.user.id,
+            email: session.user.email,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          }], {
+            onConflict: 'id'
+          })
           .select()
           .single();
 
         if (createError) throw createError;
         setProfile(createdProfile);
-        return;
+      } else if (error) {
+        throw error;
+      } else {
+        setProfile(data);
       }
-
-      if (error) throw error;
-      setProfile(data);
     } catch (error) {
       console.error('Error loading profile:', error);
     }
