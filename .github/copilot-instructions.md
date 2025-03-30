@@ -1,4 +1,4 @@
-Quirbit is a React Native + Expo app that helps users save and organize content they find on the internet. Users can:
+Quibit is a React Native + Expo app that helps users save and organize content they find on the internet. Users can:
 
 - Add and categorize links (e.g., blog posts, guides, videos)
 - Record voice notes

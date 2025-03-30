@@ -12,8 +12,8 @@ export interface Link {
   createdAt: string;
 }
 
-const STORAGE_KEY = '@quirbit_links';
-const CATEGORIES_KEY = '@quirbit_categories';
+const STORAGE_KEY = '@quibit_links';
+const CATEGORIES_KEY = '@quibit_categories';
 const DEFAULT_CATEGORIES = ['Blog', 'Tutorial', 'Video', 'Article', 'Other'];
 
 // Utility function to format relative time
