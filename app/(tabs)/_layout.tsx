@@ -18,42 +18,57 @@ export default function TabLayout() {
         headerShown: false,
         tabBarButton: HapticTab,
         tabBarBackground: TabBarBackground,
-        tabBarStyle: Platform.select({
-          ios: {
-            // Use a transparent background on iOS to show the blur effect
-            position: 'absolute',
-          },
-          default: {},
-        }),
+        tabBarItemStyle: {
+          paddingVertical: 8,
+        },
+        tabBarStyle: {
+          ...Platform.select({
+            ios: {
+              position: 'absolute',
+            },
+            default: {},
+          }),
+          height: Platform.OS === 'ios' ? 88 : 64,
+          paddingBottom: Platform.OS === 'ios' ? 28 : 12,
+          paddingTop: 12,
+        },
+        tabBarLabelStyle: {
+          fontSize: 12,
+          marginTop: 4,
+        },
       }}>
       <Tabs.Screen
         name="index"
         options={{
           title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="settings"
-        options={{
-          title: 'Settings',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="gear" color={color} />,
+          tabBarIcon: ({ color }) => <IconSymbol size={24} name="house.fill" color={color} />,
         }}
       />
       <Tabs.Screen
         name="record"
         options={{
           title: 'Record',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="mic" color={color} />,
+          tabBarIcon: ({ color }) => <IconSymbol size={24} name="mic" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="notes"
+        options={{
+          title: 'Notes',
+          tabBarIcon: ({ color }) => <IconSymbol size={24} name="notebook" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="settings"
+        options={{
+          title: 'Settings',
+          tabBarIcon: ({ color }) => <IconSymbol size={24} name="gear" color={color} />,
         }}
       />
       <Tabs.Screen
         name="manage-categories"
         options={{
-          tabBarStyle: { display: 'none' },
-          tabBarIcon: () => null,
-          tabBarShowLabel: false,
-          tabBarButton: () => null,
+          href: null,
         }}
       />
     </Tabs>

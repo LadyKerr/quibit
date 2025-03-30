@@ -8,7 +8,7 @@ export function IconSymbol({
   style,
   weight = 'regular',
 }: {
-  name: 'house.fill' | 'paperplane.fill' | 'chevron.left.forwardslash.chevron.right' | 'chevron.right' | 'gear';
+  name: 'house.fill' | 'paperplane.fill' | 'chevron.left.forwardslash.chevron.right' | 'chevron.right' | 'gear' | 'mic' | 'notebook';
   size?: number;
   color: string;
   style?: StyleProp<ViewStyle>;
