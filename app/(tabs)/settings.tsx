@@ -1,5 +1,5 @@
-import { StyleSheet, TouchableOpacity, View, Alert } from 'react-native';
-import { router } from 'expo-router'; // Add this import
+import { StyleSheet, TouchableOpacity, View, Alert, Image } from 'react-native';
+import { router } from 'expo-router';
 import { ThemedView } from '../../components/ThemedView';
 import { ThemedText } from '../../components/ThemedText';
 import { useAuth } from '../../contexts/AuthContext';
@@ -12,7 +12,7 @@ export default function SettingsScreen() {
       await signOut();
       Alert.alert('Success', 'You have been logged out successfully.');
       console.log('Logout successful');
-      router.replace('/login'); // Add this line to redirect
+      router.replace('/login');
     } catch (error) {
       console.error('Logout error:', error);
       Alert.alert(
@@ -26,11 +26,16 @@ export default function SettingsScreen() {
   return (
     <ThemedView style={styles.container}>
       <View style={styles.header}>
+        <Image 
+          source={require('../../assets/images/quibit-logo-transparent.png')}
+          style={styles.logo}
+          resizeMode="contain"
+        />
         <ThemedText style={styles.title}>Settings</ThemedText>
       </View>
 
       <View style={styles.section}>
-        <ThemedText style={styles.sectionTitle}>Account</ThemedText>
+        <ThemedText style={styles.sectionTitle}>See you soon 👋🏽</ThemedText>
         <TouchableOpacity
           style={styles.button}
           onPress={handleLogout}
@@ -46,16 +51,21 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
- 
   },
   header: {
-    paddingTop: 80,
-    marginTop: 80,
+    paddingTop: 60,
     marginBottom: 32,
+    alignItems: 'center',
+  },
+  logo: {
+    width: 120,
+    height: 120,
+    marginBottom: 16,
   },
   title: {
     fontSize: 34,
     fontWeight: 'bold',
+    paddingTop: 20,
   },
   section: {
     backgroundColor: 'white',

@@ -11,7 +11,7 @@ const MAPPING = {
   // See SF Symbols in the SF Symbols app on Mac.
   'house.fill': 'home',
   'chevron.right': 'chevron-right',
-  'tools': 'settings',
+  'gear': 'settings', // This maps 'tools' to the MaterialIcons 'settings' icon
 } as Partial<
   Record<
     import('expo-symbols').SymbolViewProps['name'],
