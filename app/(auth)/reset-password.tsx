@@ -3,24 +3,32 @@ import { StyleSheet, TextInput, TouchableOpacity, Alert, Image } from 'react-nat
 import { Link, router } from 'expo-router';
 import { ThemedView } from '../../components/ThemedView';
 import { ThemedText } from '../../components/ThemedText';
-import { useAuth } from '../../contexts/AuthContext';
+import { supabase } from '../../lib/supabase';
 
-export default function LoginScreen() {
+export default function ResetPasswordScreen() {
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signIn } = useAuth();
 
-  const handleLogin = async () => {
-    if (loading) return;
+  const handleResetPassword = async () => {
+    if (!email.trim()) {
+      Alert.alert('Error', 'Please enter your email address');
+      return;
+    }
 
     setLoading(true);
     try {
-      const { error } = await signIn(email, password);
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+        redirectTo: 'quibit://reset-confirm',
+      });
+
       if (error) {
         Alert.alert('Error', error.message);
       } else {
-        router.replace('/(tabs)');
+        Alert.alert(
+          'Success',
+          'Check your email for password reset instructions',
+          [{ text: 'OK', onPress: () => router.back() }]
+        );
       }
     } catch (error) {
       Alert.alert('Error', 'An unexpected error occurred');
@@ -36,7 +44,11 @@ export default function LoginScreen() {
         style={styles.logo}
         resizeMode="contain"
       />
-      <ThemedText style={styles.subtitle}>Your personal digital brain 🧠</ThemedText>
+      
+      <ThemedText style={styles.title}>Reset Password</ThemedText>
+      <ThemedText style={styles.subtitle}>
+        Enter your email address and we'll send you instructions to reset your password.
+      </ThemedText>
 
       <ThemedView style={styles.formContainer}>
         <ThemedText style={styles.label}>Email</ThemedText>
@@ -49,34 +61,20 @@ export default function LoginScreen() {
           keyboardType="email-address"
           placeholderTextColor="#999"
         />
-        
-        <ThemedText style={styles.label}>Password</ThemedText>
-        <TextInput
-          style={styles.input}
-          placeholder="••••••••"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          placeholderTextColor="#999"
-        />
-        
-        <Link href="/reset-password" style={styles.forgotPassword}>
-          <ThemedText style={styles.forgotPasswordText}>Forgot password?</ThemedText>
-        </Link>
 
         <TouchableOpacity
           style={[styles.button, loading && styles.buttonDisabled]}
-          onPress={handleLogin}
+          onPress={handleResetPassword}
           disabled={loading}
         >
           <ThemedText style={styles.buttonText}>
-            {loading ? 'Signing in...' : 'Log In'}
+            {loading ? 'Sending...' : 'Send Reset Link'}
           </ThemedText>
         </TouchableOpacity>
 
-        <Link href="/signup" style={styles.signupLink}>
-          <ThemedText style={styles.signupText}>
-            Don't have an account? <ThemedText style={styles.signupHighlight}>Sign Up</ThemedText>
+        <Link href="/login" style={styles.backLink}>
+          <ThemedText style={styles.backText}>
+            Back to Login
           </ThemedText>
         </Link>
       </ThemedView>
@@ -94,17 +92,21 @@ const styles = StyleSheet.create({
   logo: {
     width: 120,
     height: 120,
-    marginBottom: 0,
+    marginBottom: 16,
   },
   title: {
     fontSize: 32,
     fontWeight: 'bold',
     marginBottom: 8,
+    paddingTop: 10,
+    textAlign: 'center',
   },
   subtitle: {
-    fontSize: 18,
+    fontSize: 16,
     color: '#666',
-    marginBottom: 48,
+    marginBottom: 32,
+    textAlign: 'center',
+    paddingHorizontal: 20,
   },
   formContainer: {
     width: '100%',
@@ -120,7 +122,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     fontSize: 16,
-    marginBottom: 16,
+    marginBottom: 24,
     width: '100%',
   },
   button: {
@@ -128,7 +130,6 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     alignItems: 'center',
-    marginTop: 8,
   },
   buttonDisabled: {
     backgroundColor: '#A5B1C2',
@@ -138,26 +139,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
-  forgotPassword: {
-    alignSelf: 'flex-end',
-    marginTop: -8,
-    marginBottom: 24,
-  },
-  forgotPasswordText: {
-    color: '#4B7BEC',
-    fontSize: 14,
-  },
-  signupLink: {
+  backLink: {
     marginTop: 24,
     alignItems: 'center',
   },
-  signupText: {
+  backText: {
     fontSize: 14,
-    color: '#666',
-    textAlign: 'center',
-  },
-  signupHighlight: {
     color: '#4B7BEC',
-    fontWeight: '600',
+    textAlign: 'center',
   },
 });

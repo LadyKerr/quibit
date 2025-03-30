@@ -1,3 +1,4 @@
+import 'react-native-get-random-values';
 import { Stack } from 'expo-router';
 import { AuthProvider } from '../contexts/AuthContext';
 import { OnboardingProvider } from '../contexts/OnboardingContext';

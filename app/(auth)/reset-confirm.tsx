@@ -1,26 +1,56 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { StyleSheet, TextInput, TouchableOpacity, Alert, Image } from 'react-native';
-import { Link, router } from 'expo-router';
+import { router } from 'expo-router';
 import { ThemedView } from '../../components/ThemedView';
 import { ThemedText } from '../../components/ThemedText';
-import { useAuth } from '../../contexts/AuthContext';
+import { supabase } from '../../lib/supabase';
 
-export default function LoginScreen() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+export default function ResetConfirmScreen() {
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signIn } = useAuth();
+  const [session, setSession] = useState<any>(null);
 
-  const handleLogin = async () => {
-    if (loading) return;
+  useEffect(() => {
+    checkSession();
+  }, []);
+
+  const checkSession = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      Alert.alert('Error', 'Invalid or expired reset link', [
+        { text: 'OK', onPress: () => router.replace('/login') }
+      ]);
+      return;
+    }
+    setSession(session);
+  };
+
+  const handleUpdatePassword = async () => {
+    if (newPassword !== confirmPassword) {
+      Alert.alert('Error', 'Passwords do not match');
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      Alert.alert('Error', 'Password must be at least 6 characters long');
+      return;
+    }
 
     setLoading(true);
     try {
-      const { error } = await signIn(email, password);
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+
       if (error) {
         Alert.alert('Error', error.message);
       } else {
-        router.replace('/(tabs)');
+        Alert.alert(
+          'Success',
+          'Your password has been updated',
+          [{ text: 'OK', onPress: () => router.replace('/login') }]
+        );
       }
     } catch (error) {
       Alert.alert('Error', 'An unexpected error occurred');
@@ -29,6 +59,10 @@ export default function LoginScreen() {
     }
   };
 
+  if (!session) {
+    return null;
+  }
+
   return (
     <ThemedView style={styles.container}>
       <Image 
@@ -36,49 +70,42 @@ export default function LoginScreen() {
         style={styles.logo}
         resizeMode="contain"
       />
-      <ThemedText style={styles.subtitle}>Your personal digital brain 🧠</ThemedText>
+      
+      <ThemedText style={styles.title}>Create New Password</ThemedText>
+      <ThemedText style={styles.subtitle}>
+        Enter your new password below.
+      </ThemedText>
 
       <ThemedView style={styles.formContainer}>
-        <ThemedText style={styles.label}>Email</ThemedText>
-        <TextInput
-          style={styles.input}
-          placeholder="your@email.com"
-          value={email}
-          onChangeText={setEmail}
-          autoCapitalize="none"
-          keyboardType="email-address"
-          placeholderTextColor="#999"
-        />
-        
-        <ThemedText style={styles.label}>Password</ThemedText>
+        <ThemedText style={styles.label}>New Password</ThemedText>
         <TextInput
           style={styles.input}
           placeholder="••••••••"
-          value={password}
-          onChangeText={setPassword}
+          value={newPassword}
+          onChangeText={setNewPassword}
           secureTextEntry
           placeholderTextColor="#999"
         />
-        
-        <Link href="/reset-password" style={styles.forgotPassword}>
-          <ThemedText style={styles.forgotPasswordText}>Forgot password?</ThemedText>
-        </Link>
+
+        <ThemedText style={styles.label}>Confirm Password</ThemedText>
+        <TextInput
+          style={styles.input}
+          placeholder="••••••••"
+          value={confirmPassword}
+          onChangeText={setConfirmPassword}
+          secureTextEntry
+          placeholderTextColor="#999"
+        />
 
         <TouchableOpacity
           style={[styles.button, loading && styles.buttonDisabled]}
-          onPress={handleLogin}
+          onPress={handleUpdatePassword}
           disabled={loading}
         >
           <ThemedText style={styles.buttonText}>
-            {loading ? 'Signing in...' : 'Log In'}
+            {loading ? 'Updating...' : 'Update Password'}
           </ThemedText>
         </TouchableOpacity>
-
-        <Link href="/signup" style={styles.signupLink}>
-          <ThemedText style={styles.signupText}>
-            Don't have an account? <ThemedText style={styles.signupHighlight}>Sign Up</ThemedText>
-          </ThemedText>
-        </Link>
       </ThemedView>
     </ThemedView>
   );
@@ -94,17 +121,21 @@ const styles = StyleSheet.create({
   logo: {
     width: 120,
     height: 120,
-    marginBottom: 0,
+    marginBottom: 16,
   },
   title: {
     fontSize: 32,
     fontWeight: 'bold',
+    paddingTop: 10,
     marginBottom: 8,
+    textAlign: 'center',
   },
   subtitle: {
-    fontSize: 18,
+    fontSize: 16,
     color: '#666',
-    marginBottom: 48,
+    marginBottom: 32,
+    textAlign: 'center',
+    paddingHorizontal: 20,
   },
   formContainer: {
     width: '100%',
@@ -120,7 +151,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     fontSize: 16,
-    marginBottom: 16,
+    marginBottom: 24,
     width: '100%',
   },
   button: {
@@ -128,7 +159,6 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     alignItems: 'center',
-    marginTop: 8,
   },
   buttonDisabled: {
     backgroundColor: '#A5B1C2',
@@ -136,28 +166,6 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: '600',
-  },
-  forgotPassword: {
-    alignSelf: 'flex-end',
-    marginTop: -8,
-    marginBottom: 24,
-  },
-  forgotPasswordText: {
-    color: '#4B7BEC',
-    fontSize: 14,
-  },
-  signupLink: {
-    marginTop: 24,
-    alignItems: 'center',
-  },
-  signupText: {
-    fontSize: 14,
-    color: '#666',
-    textAlign: 'center',
-  },
-  signupHighlight: {
-    color: '#4B7BEC',
     fontWeight: '600',
   },
 });

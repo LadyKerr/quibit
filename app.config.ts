@@ -8,11 +8,20 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: 'quibit',
   slug: 'quibit',
+  scheme: 'quibit',
+  web: {
+    ...config.web,
+    bundler: 'metro',
+  },
   extra: {
+    ...config.extra,
     supabaseUrl: SUPABASE_URL,
     supabaseAnonKey: SUPABASE_ANON_KEY,
     eas: {
       projectId: "your-project-id",
     },
   },
+  plugins: [
+    'expo-router',
+  ],
 });

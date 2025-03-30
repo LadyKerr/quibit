@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { Session } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface Profile {
   id: string;
@@ -84,6 +85,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       email,
       password,
     });
+
+    if (!error) {
+      // Reset onboarding state for new users
+      await AsyncStorage.removeItem('@quibit/onboarding_complete');
+    }
+
     return { error };
   };
 
