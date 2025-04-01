@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
-import { View, FlatList, TouchableOpacity, Modal, StyleSheet, Text } from 'react-native';
-import { useNotes } from '../../hooks/useNotes';
+import { View, FlatList, TouchableOpacity, Modal, StyleSheet, Text, Image } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useNotes, Note } from '../../hooks/useNotes';
 import { NoteForm } from '../../components/NoteForm';
 
 export default function NotesScreen() {
   const { notes, addNote, editNote, deleteNote } = useNotes();
   const [isModalVisible, setModalVisible] = useState(false);
-  const [editingNote, setEditingNote] = useState(null);
+  const [editingNote, setEditingNote] = useState<Note | null>(null);
 
   const handleAddNote = async (data: { title: string; content: string }) => {
     await addNote(data.title, data.content);
@@ -25,11 +26,26 @@ export default function NotesScreen() {
     deleteNote(id);
   };
 
+  const renderEmptyComponent = () => (
+    <View style={styles.emptyContainer}>
+      <Text style={styles.emptyText}>Add your first note</Text>
+    </View>
+  );
+
   return (
     <View style={styles.container}>
+      <View style={styles.header}>
+        <Image
+          source={require('../../assets/images/quibit-logo.png')}
+          style={styles.logo}
+          resizeMode="contain"
+        />
+      </View>
       <FlatList
         data={notes}
         keyExtractor={item => item.id}
+        ListEmptyComponent={renderEmptyComponent}
+        contentContainerStyle={notes.length === 0 ? styles.emptyList : undefined}
         renderItem={({ item }) => (
           <TouchableOpacity
             style={styles.noteItem}
@@ -55,12 +71,16 @@ export default function NotesScreen() {
           setModalVisible(true);
         }}
       >
-        <Text style={styles.addButtonText}>+</Text>
+        <Ionicons name="add" size={32} color="#fff" />
       </TouchableOpacity>
       <Modal visible={isModalVisible} animationType="slide">
         <NoteForm
           onSubmit={editingNote ? handleEditNote : handleAddNote}
           initialData={editingNote || undefined}
+          onClose={() => {
+            setModalVisible(false);
+            setEditingNote(null);
+          }}
         />
       </Modal>
     </View>
@@ -70,7 +90,20 @@ export default function NotesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
+    backgroundColor: '#fff',
+  },
+  header: {
+    height: 100,
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+    backgroundColor: '#fff',
+  },
+  logo: {
+    height: 30,
+    width: 100,
   },
   noteItem: {
     padding: 16,
@@ -89,19 +122,38 @@ const styles = StyleSheet.create({
     color: 'red',
     marginTop: 8,
   },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingBottom: 100,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+  },
+  emptyList: {
+    flex: 1,
+  },
   addButton: {
     position: 'absolute',
-    bottom: 16,
-    right: 16,
+    bottom: 30,
+    right: 20,
     backgroundColor: '#007AFF',
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  addButtonText: {
-    color: '#fff',
-    fontSize: 24,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+    zIndex: 999,
   },
 });
