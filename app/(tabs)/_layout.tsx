@@ -1,6 +1,7 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { Platform } from 'react-native';
+import { Platform, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { HapticTab } from '@/components/HapticTab';
 import { IconSymbol } from '@/components/ui/IconSymbol';
@@ -10,6 +11,14 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
+  const insets = useSafeAreaInsets();
+  
+  // Calculate bottom padding based on platform and safe area
+  const bottomPadding = Platform.select({
+    ios: insets.bottom,
+    android: 12,
+    default: 0
+  });
 
   return (
     <Tabs
@@ -18,24 +27,27 @@ export default function TabLayout() {
         headerShown: false,
         tabBarButton: HapticTab,
         tabBarBackground: TabBarBackground,
-        tabBarItemStyle: {
-          paddingVertical: 8,
-        },
         tabBarStyle: {
           ...Platform.select({
             ios: {
               position: 'absolute',
+              height: 88,
+              paddingBottom: 28,
             },
-            default: {},
+            android: {
+              height: 64,
+              paddingBottom: bottomPadding,
+            },
+            default: {
+              height: 64,
+              paddingBottom: 12,
+            }
           }),
-          height: Platform.OS === 'ios' ? 88 : 64,
-          paddingBottom: Platform.OS === 'ios' ? 28 : 12,
           paddingTop: 12,
+          ...styles.tabBar
         },
-        tabBarLabelStyle: {
-          fontSize: 12,
-          marginTop: 4,
-        },
+        tabBarItemStyle: styles.tabBarItem,
+        tabBarLabelStyle: styles.tabBarLabel,
       }}>
       <Tabs.Screen
         name="index"
@@ -74,3 +86,25 @@ export default function TabLayout() {
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  tabBar: {
+    // Add elevation for Android shadow
+    elevation: 8,
+    // iOS shadow
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: -2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+  },
+  tabBarItem: {
+    paddingVertical: 8,
+  },
+  tabBarLabel: {
+    fontSize: 12,
+    marginTop: 4,
+  }
+});
