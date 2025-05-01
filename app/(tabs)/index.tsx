@@ -15,6 +15,7 @@ import {
   Platform,
 } from 'react-native';
 import { useLinks } from '../../hooks/useLinks';
+import { useSupabaseTest } from '../../hooks/useSupabaseTest';
 import type { Link as LinkType } from '../../hooks/useLinks';
 import { ThemedView } from '../../components/ThemedView';
 import { ThemedText } from '../../components/ThemedText';
@@ -39,6 +40,8 @@ export default function TabOneScreen() {
     sortOrder,
     setSortOrder,
   } = useLinks();
+  
+  const { isConnected, error: connectionError } = useSupabaseTest();
   
   const [showAddModal, setShowAddModal] = useState(false);
   const [showNewCategoryModal, setShowNewCategoryModal] = useState(false);
@@ -140,7 +143,15 @@ export default function TabOneScreen() {
               source={require('../../assets/images/icon.png')}
               style={styles.headerIcon}
             />
-            <ThemedText style={styles.headerTitle}>Quibit</ThemedText>
+            <View>
+              <ThemedText style={styles.headerTitle}>Quibit</ThemedText>
+              <ThemedText style={[
+                styles.connectionStatus,
+                { color: isConnected ? '#4CAF50' : '#f44336' }
+              ]}>
+                {isConnected ? '● Connected' : '● Offline'}
+              </ThemedText>
+            </View>
           </View>
           <TouchableOpacity
             style={styles.headerFab}
@@ -468,5 +479,10 @@ const styles = StyleSheet.create({
     marginTop: 12,
     fontSize: 16,
     color: '#666',
+  },
+  connectionStatus: {
+    fontSize: 12,
+    marginTop: -4,
+    marginLeft: 2,
   },
 });

@@ -3,6 +3,7 @@ import { View, FlatList, TouchableOpacity, Modal, StyleSheet, Text, Image } from
 import { Ionicons } from '@expo/vector-icons';
 import { useNotes, Note } from '../../hooks/useNotes';
 import { NoteForm } from '../../components/NoteForm';
+import { Header } from '../../components/Header';
 
 export default function NotesScreen() {
   const { notes, addNote, editNote, deleteNote } = useNotes();
@@ -34,13 +35,7 @@ export default function NotesScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Image
-          source={require('../../assets/images/quibit-logo.png')}
-          style={styles.logo}
-          resizeMode="contain"
-        />
-      </View>
+      <Header showLogo />
       <FlatList
         data={notes}
         keyExtractor={item => item.id}
@@ -91,19 +86,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-  },
-  header: {
-    height: 100,
-    justifyContent: 'flex-end',
-    alignItems: 'center',
-    paddingBottom: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
-    backgroundColor: '#fff',
-  },
-  logo: {
-    height: 30,
-    width: 100,
   },
   noteItem: {
     padding: 16,
