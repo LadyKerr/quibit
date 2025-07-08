@@ -1,7 +1,8 @@
-import { StyleSheet, TouchableOpacity, View, Alert, Image } from 'react-native';
+import { StyleSheet, TouchableOpacity, View, Alert, SafeAreaView } from 'react-native';
 import { router } from 'expo-router';
 import { ThemedView } from '../../components/ThemedView';
 import { ThemedText } from '../../components/ThemedText';
+import { AppHeader } from '../../components/AppHeader';
 import { useAuth } from '../../contexts/AuthContext';
 
 export default function SettingsScreen() {
@@ -24,17 +25,12 @@ export default function SettingsScreen() {
   };
 
   return (
-    <ThemedView style={styles.container}>
-      <View style={styles.header}>
-        <Image 
-          source={require('../../assets/images/quibit-logo-transparent.png')}
-          style={styles.logo}
-          resizeMode="contain"
-        />
-        <ThemedText style={styles.title}>Settings</ThemedText>
-      </View>
+    <SafeAreaView style={styles.safeArea}>
+      <ThemedView style={styles.container}>
+        <AppHeader showAddButton={false} />
 
-      <View style={styles.section}>
+        <View style={styles.content}>
+          <View style={styles.section}>
         <ThemedText style={styles.sectionTitle}>Customization</ThemedText>
         <TouchableOpacity
           style={styles.settingButton}
@@ -50,32 +46,25 @@ export default function SettingsScreen() {
           style={styles.logoutButton}
           onPress={handleLogout}
         >
-          <ThemedText style={styles.logoutButtonText}>Log Out</ThemedText>
-        </TouchableOpacity>
-      </View>
-    </ThemedView>
+          <ThemedText style={styles.logoutButtonText}>Log Out</ThemedText>          </TouchableOpacity>
+        </View>
+        </View>
+      </ThemedView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
   container: {
     flex: 1,
-    padding: 12,
   },
-  header: {
-    paddingTop: 40,
-    marginBottom: 24,
-    alignItems: 'center',
-  },
-  logo: {
-    width: 80,
-    height: 80,
-    marginBottom: 12,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    paddingTop: 12,
+  content: {
+    flex: 1,
+    padding: 16,
   },
   section: {
     backgroundColor: 'white',

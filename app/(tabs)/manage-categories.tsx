@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { StyleSheet, TouchableOpacity, View, TextInput, Alert, ScrollView } from 'react-native';
+import { StyleSheet, TouchableOpacity, View, TextInput, Alert, ScrollView, SafeAreaView } from 'react-native';
 import { router } from 'expo-router';
 import { ThemedView } from '../../components/ThemedView';
 import { ThemedText } from '../../components/ThemedText';
+import { AppHeader } from '../../components/AppHeader';
 import { useLinks } from '../../hooks/useLinks';
 import { CATEGORY_COLORS } from '../../components/CategoryButtons';
 
@@ -96,18 +97,16 @@ export default function ManageCategoriesScreen() {
   };
 
   return (
-    <ThemedView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => router.back()}
-        >
-          <ThemedText style={styles.backButtonText}>←</ThemedText>
-        </TouchableOpacity>
-        <ThemedText style={styles.title}>Manage Categories</ThemedText>
-      </View>
+    <SafeAreaView style={styles.safeArea}>
+      <ThemedView style={styles.container}>
+        <AppHeader 
+          showBackButton={true}
+          showAddButton={false}
+          title="Manage Categories"
+        />
 
-      <View style={styles.addSection}>
+        <View style={styles.content}>
+          <View style={styles.addSection}>
         <View style={styles.inputContainer}>
           <TextInput
             style={styles.input}
@@ -194,32 +193,24 @@ export default function ManageCategoriesScreen() {
             </View>
           );
         })}
-      </ScrollView>
-    </ThemedView>
+        </ScrollView>
+        </View>
+      </ThemedView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
   container: {
     flex: 1,
+  },
+  content: {
+    flex: 1,
     padding: 16,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingTop: 60,
-    marginBottom: 32,
-  },
-  backButton: {
-    padding: 8,
-    marginRight: 16,
-  },
-  backButtonText: {
-    fontSize: 24,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
   },
   addSection: {
     backgroundColor: 'white',

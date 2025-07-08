@@ -10,18 +10,17 @@ import {
   SafeAreaView,
   Modal,
   Alert,
-  Image,
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
 import { useLinks } from '../../hooks/useLinks';
-import { useSupabaseTest } from '../../hooks/useSupabaseTest';
 import type { Link as LinkType } from '../../hooks/useLinks';
 import { ThemedView } from '../../components/ThemedView';
 import { ThemedText } from '../../components/ThemedText';
 import { CategoryButtons } from '../../components/CategoryButtons';
 import { LinkCard } from '../../components/LinkCard';
 import { LinkForm } from '../../components/LinkForm';
+import { AppHeader } from '../../components/AppHeader';
 import { useAuth } from '../../contexts/AuthContext';
 
 export default function TabOneScreen() {
@@ -40,8 +39,6 @@ export default function TabOneScreen() {
     sortOrder,
     setSortOrder,
   } = useLinks();
-  
-  const { isConnected, error: connectionError } = useSupabaseTest();
   
   const [showAddModal, setShowAddModal] = useState(false);
   const [showNewCategoryModal, setShowNewCategoryModal] = useState(false);
@@ -137,32 +134,12 @@ export default function TabOneScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <ThemedView style={styles.container}>
-        <View style={styles.header}>
-          <View style={styles.headerLeft}>
-            <Image 
-              source={require('../../assets/images/icon.png')}
-              style={styles.headerIcon}
-            />
-            <View>
-              <ThemedText style={styles.headerTitle}>Quibit</ThemedText>
-              <ThemedText style={[
-                styles.connectionStatus,
-                { color: isConnected ? '#4CAF50' : '#f44336' }
-              ]}>
-                {isConnected ? '● Connected' : '● Offline'}
-              </ThemedText>
-            </View>
-          </View>
-          <TouchableOpacity
-            style={styles.headerFab}
-            onPress={() => {
-              setEditingLink(null);
-              setShowAddModal(true);
-            }}
-          >
-            <ThemedText style={styles.fabText}>+</ThemedText>
-          </TouchableOpacity>
-        </View>
+        <AppHeader 
+          onAddPress={() => {
+            setEditingLink(null);
+            setShowAddModal(true);
+          }}
+        />
 
         <View style={styles.content}>
           <View style={styles.filterContainer}>
@@ -308,8 +285,6 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    padding: 16,
-    position: 'relative',
   },
   input: {
     backgroundColor: '#f0f0f0',
@@ -359,49 +334,7 @@ const styles = StyleSheet.create({
   filterCategories: {
     marginBottom: 8,
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 16,
-    paddingTop: 16,
-  },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  headerIcon: {
-    width: 60,
-    height: 60,
-    marginRight: 0,
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-  },
-  headerFab: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#4B7BEC',
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  fabText: {
-    color: '#fff',
-    fontSize: 24,
-    fontWeight: '400',
-    lineHeight: 28,
-  },
-  modalContainer: {
+  content: {
     flex: 1,
     backgroundColor: '#f5f5f5',
   },
@@ -479,10 +412,5 @@ const styles = StyleSheet.create({
     marginTop: 12,
     fontSize: 16,
     color: '#666',
-  },
-  connectionStatus: {
-    fontSize: 12,
-    marginTop: -4,
-    marginLeft: 2,
   },
 });

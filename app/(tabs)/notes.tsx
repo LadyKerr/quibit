@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { View, FlatList, TouchableOpacity, Modal, StyleSheet, Text, Image } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { View, FlatList, TouchableOpacity, Modal, StyleSheet, Text, SafeAreaView } from 'react-native';
 import { useNotes, Note } from '../../hooks/useNotes';
 import { NoteForm } from '../../components/NoteForm';
-import { Header } from '../../components/Header';
+import { ThemedView } from '../../components/ThemedView';
+import { ThemedText } from '../../components/ThemedText';
+import { AppHeader } from '../../components/AppHeader';
 
 export default function NotesScreen() {
   const { notes, addNote, editNote, deleteNote } = useNotes();
@@ -34,9 +35,16 @@ export default function NotesScreen() {
   );
 
   return (
-    <View style={styles.container}>
-      <Header showLogo />
-      <FlatList
+    <SafeAreaView style={styles.safeArea}>
+      <ThemedView style={styles.container}>
+        <AppHeader 
+          onAddPress={() => {
+            setEditingNote(null);
+            setModalVisible(true);
+          }}
+        />
+
+        <FlatList
         data={notes}
         keyExtractor={item => item.id}
         ListEmptyComponent={renderEmptyComponent}
@@ -59,15 +67,6 @@ export default function NotesScreen() {
           </TouchableOpacity>
         )}
       />
-      <TouchableOpacity
-        style={styles.addButton}
-        onPress={() => {
-          setEditingNote(null);
-          setModalVisible(true);
-        }}
-      >
-        <Ionicons name="add" size={32} color="#fff" />
-      </TouchableOpacity>
       <Modal visible={isModalVisible} animationType="slide">
         <NoteForm
           onSubmit={editingNote ? handleEditNote : handleAddNote}
@@ -78,14 +77,18 @@ export default function NotesScreen() {
           }}
         />
       </Modal>
-    </View>
+      </ThemedView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
     backgroundColor: '#fff',
+  },
+  container: {
+    flex: 1,
   },
   noteItem: {
     padding: 16,
@@ -117,25 +120,5 @@ const styles = StyleSheet.create({
   },
   emptyList: {
     flex: 1,
-  },
-  addButton: {
-    position: 'absolute',
-    bottom: 30,
-    right: 20,
-    backgroundColor: '#007AFF',
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-    zIndex: 999,
   },
 });
