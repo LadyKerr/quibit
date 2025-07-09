@@ -224,36 +224,58 @@ export const useLinks = () => {
     if (oldName === newName) return { success: true };
 
     try {
-      // Check if it's a default category
+      // Check if new name already exists in default categories
       const { data: defaultCheck } = await supabase
         .from('default_categories')
         .select('name')
-        .eq('name', oldName)
+        .eq('name', newName)
         .single();
 
       if (defaultCheck) {
-        return { success: false, error: 'Cannot edit default categories' };
+        return { success: false, error: 'Category name conflicts with a default category' };
       }
 
-      // Check if new name already exists
+      // Check if new name already exists in user categories
       const { data: existingCheck } = await supabase
         .from('categories')
         .select('name')
         .eq('name', newName)
+        .eq('user_id', session.user.id)
         .single();
 
       if (existingCheck) {
         return { success: false, error: 'Category name already exists' };
       }
 
-      // Update the category
-      const { error } = await supabase
-        .from('categories')
-        .update({ name: newName })
+      // Check if the old name is a default category
+      const { data: isDefaultCategory } = await supabase
+        .from('default_categories')
+        .select('name')
         .eq('name', oldName)
-        .eq('user_id', session.user.id);
+        .single();
 
-      if (error) throw error;
+      if (isDefaultCategory) {
+        // For default categories, create a new user category with the new name
+        const { error: insertError } = await supabase
+          .from('categories')
+          .insert([
+            {
+              name: newName,
+              user_id: session.user.id,
+            },
+          ]);
+
+        if (insertError) throw insertError;
+      } else {
+        // For user categories, update the existing record
+        const { error: updateError } = await supabase
+          .from('categories')
+          .update({ name: newName })
+          .eq('name', oldName)
+          .eq('user_id', session.user.id);
+
+        if (updateError) throw updateError;
+      }
 
       // Update categories state
       setCategories(prev => prev.map(cat => cat === oldName ? newName : cat).sort());
