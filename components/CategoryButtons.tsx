@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
 import { ThemedText } from './ThemedText';
 
@@ -22,6 +22,19 @@ interface CategoryButtonsProps {
   categoryColors?: { [key: string]: string };
 }
 
+// Helper function to add transparency to hex colors
+const addTransparency = (hexColor: string, opacity: number = 0.2): string => {
+  // Remove # if present
+  const hex = hexColor.replace('#', '');
+  
+  // Convert to RGB
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+  
+  return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+};
+
 export function CategoryButtons({
   categories,
   selectedCategory,
@@ -31,20 +44,34 @@ export function CategoryButtons({
   style,
   categoryColors = {}
 }: CategoryButtonsProps) {
+  // Memoize the color mapping to avoid recalculation on every render
+  const memoizedCategoryColors = useMemo(() => {
+    const colorMap: { [key: string]: { background: string; text: string } } = {};
+    
+    // Pre-compute colors for all categories
+    categories.forEach(category => {
+      const trimmedCategory = category.trim().replace(/[<>]/g, '');
+      
+      if (categoryColors[trimmedCategory]) {
+        const customColor = categoryColors[trimmedCategory];
+        colorMap[trimmedCategory] = {
+          background: addTransparency(customColor),
+          text: customColor
+        };
+      } else {
+        colorMap[trimmedCategory] = CATEGORY_COLORS[trimmedCategory] || { 
+          background: '#F0F0F0', 
+          text: '#666666' 
+        };
+      }
+    });
+    
+    return colorMap;
+  }, [categories, categoryColors]);
+
   const getCategoryColors = (category: string) => {
     const trimmedCategory = category.trim().replace(/[<>]/g, '');
-    
-    // If there's a custom color for this category, use it
-    if (categoryColors[trimmedCategory]) {
-      const customColor = categoryColors[trimmedCategory];
-      return { 
-        background: customColor + '30', // Add transparency
-        text: customColor 
-      };
-    }
-    
-    // Otherwise use default colors
-    return CATEGORY_COLORS[trimmedCategory] || { background: '#F0F0F0', text: '#666666' };
+    return memoizedCategoryColors[trimmedCategory] || { background: '#F0F0F0', text: '#666666' };
   };
 
   return (
