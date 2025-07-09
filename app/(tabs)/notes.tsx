@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, FlatList, TouchableOpacity, Modal, StyleSheet, TextInput, SafeAreaView, Alert } from 'react-native';
+import { View, FlatList, TouchableOpacity, Modal, StyleSheet, TextInput, SafeAreaView, Alert, TouchableWithoutFeedback } from 'react-native';
 import { useNotes, Note } from '../../hooks/useNotes';
 import { NoteForm } from '../../components/NoteForm';
 import { ThemedView } from '../../components/ThemedView';
@@ -109,6 +109,61 @@ export default function NotesScreen() {
     </View>
   );
 
+  const renderNoteList = ({ item }: { item: Note }) => (
+    <TouchableOpacity
+      style={styles.noteListItem}
+      onPress={() => {
+        setEditingNote(item);
+        setModalVisible(true);
+      }}
+    >
+      <View style={styles.noteListContent}>
+        <View style={styles.noteListHeader}>
+          <ThemedText style={styles.noteListTitle}>{item.title}</ThemedText>
+          <ThemedText style={styles.noteListTime}>
+            {formatTimeAgo(item.created_at)}
+          </ThemedText>
+        </View>
+        <ThemedText style={styles.noteListPreview} numberOfLines={2}>
+          {item.content}
+        </ThemedText>
+      </View>
+      
+      <TouchableOpacity
+        style={styles.listActionButton}
+        onPress={(e) => {
+          e.stopPropagation();
+          setShowActionMenu(showActionMenu === item.id ? null : item.id);
+        }}
+      >
+        <ThemedText style={styles.listActionIcon}>⋯</ThemedText>
+      </TouchableOpacity>
+      
+      {showActionMenu === item.id && (
+        <View style={styles.actionMenu}>
+          <TouchableOpacity
+            style={styles.actionMenuItem}
+            onPress={() => {
+              setEditingNote(item);
+              setModalVisible(true);
+              setShowActionMenu(null);
+            }}
+          >
+            <ThemedText style={styles.actionMenuIcon}>✏️</ThemedText>
+            <ThemedText style={styles.actionMenuText}>Edit</ThemedText>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.actionMenuItem, styles.actionMenuItemDanger]}
+            onPress={() => handleDeleteNote(item)}
+          >
+            <ThemedText style={styles.actionMenuIcon}>🗑️</ThemedText>
+            <ThemedText style={[styles.actionMenuText, styles.actionMenuTextDanger]}>Delete</ThemedText>
+          </TouchableOpacity>
+        </View>
+      )}
+    </TouchableOpacity>
+  );
+
   const renderEmptyComponent = () => (
     <View style={styles.emptyContainer}>
       <ThemedText style={styles.emptyText}>
@@ -127,63 +182,66 @@ export default function NotesScreen() {
           }}
         />
 
-        <View style={styles.content}>
-          {/* Search Bar */}
-          <View style={styles.searchContainer}>
-            <View style={styles.searchBar}>
-              <ThemedText style={styles.searchIcon}>🔍</ThemedText>
-              <TextInput
-                style={styles.searchInput}
-                placeholder="Search notes..."
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-                placeholderTextColor="#999"
-              />
+        <TouchableWithoutFeedback onPress={() => setShowActionMenu(null)}>
+          <View style={styles.content}>
+            {/* Search Bar */}
+            <View style={styles.searchContainer}>
+              <View style={styles.searchBar}>
+                <ThemedText style={styles.searchIcon}>🔍</ThemedText>
+                <TextInput
+                  style={styles.searchInput}
+                  placeholder="Search notes..."
+                  value={searchQuery}
+                  onChangeText={setSearchQuery}
+                  placeholderTextColor="#999"
+                />
+              </View>
             </View>
-          </View>
 
-          {/* Header with count and view toggle */}
-          <View style={styles.headerRow}>
-            <ThemedText style={styles.notesCount}>
-              {filteredNotes.length} Note{filteredNotes.length !== 1 ? 's' : ''}
-            </ThemedText>
-            <View style={styles.viewToggle}>
-              <TouchableOpacity
-                style={[
-                  styles.toggleButton,
-                  viewMode === 'cards' && styles.toggleButtonActive
-                ]}
-                onPress={() => setViewMode('cards')}
-              >
-                <ThemedText style={[
-                  styles.toggleButtonText,
-                  viewMode === 'cards' && styles.toggleButtonTextActive
-                ]}>Cards</ThemedText>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[
-                  styles.toggleButton,
-                  viewMode === 'list' && styles.toggleButtonActive
-                ]}
-                onPress={() => setViewMode('list')}
-              >
-                <ThemedText style={[
-                  styles.toggleButtonText,
-                  viewMode === 'list' && styles.toggleButtonTextActive
-                ]}>List</ThemedText>
-              </TouchableOpacity>
+            {/* Header with count and view toggle */}
+            <View style={styles.headerRow}>
+              <ThemedText style={styles.notesCount}>
+                {filteredNotes.length} Note{filteredNotes.length !== 1 ? 's' : ''}
+              </ThemedText>
+              <View style={styles.viewToggle}>
+                <TouchableOpacity
+                  style={[
+                    styles.toggleButton,
+                    viewMode === 'cards' && styles.toggleButtonActive
+                  ]}
+                  onPress={() => setViewMode('cards')}
+                >
+                  <ThemedText style={[
+                    styles.toggleButtonText,
+                    viewMode === 'cards' && styles.toggleButtonTextActive
+                  ]}>Cards</ThemedText>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    styles.toggleButton,
+                    viewMode === 'list' && styles.toggleButtonActive
+                  ]}
+                  onPress={() => setViewMode('list')}
+                >
+                  <ThemedText style={[
+                    styles.toggleButtonText,
+                    viewMode === 'list' && styles.toggleButtonTextActive
+                  ]}>List</ThemedText>
+                </TouchableOpacity>
+              </View>
             </View>
-          </View>
 
-          <FlatList
-            data={filteredNotes}
-            keyExtractor={item => item.id}
-            renderItem={renderNoteCard}
-            ListEmptyComponent={renderEmptyComponent}
-            contentContainerStyle={filteredNotes.length === 0 ? styles.emptyList : styles.listContent}
-            showsVerticalScrollIndicator={false}
-          />
-        </View>
+            <FlatList
+              data={filteredNotes}
+              keyExtractor={item => item.id}
+              renderItem={viewMode === 'cards' ? renderNoteCard : renderNoteList}
+              ListEmptyComponent={renderEmptyComponent}
+              contentContainerStyle={filteredNotes.length === 0 ? styles.emptyList : styles.listContent}
+              showsVerticalScrollIndicator={false}
+              onScrollBeginDrag={() => setShowActionMenu(null)}
+            />
+          </View>
+        </TouchableWithoutFeedback>
 
         <Modal visible={isModalVisible} animationType="slide">
           <NoteForm
@@ -334,6 +392,103 @@ const styles = StyleSheet.create({
     color: '#495057',
   },
   actionLabelDanger: {
+    color: '#d32f2f',
+  },
+  // List view styles
+  noteListItem: {
+    backgroundColor: 'white',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 8,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.03,
+    shadowRadius: 4,
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: '#f1f3f5',
+    flexDirection: 'row',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  noteListContent: {
+    flex: 1,
+    marginRight: 12,
+  },
+  noteListHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  noteListTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#212529',
+    flex: 1,
+    marginRight: 8,
+  },
+  noteListTime: {
+    fontSize: 11,
+    color: '#adb5bd',
+    fontWeight: '500',
+  },
+  noteListPreview: {
+    fontSize: 13,
+    color: '#6c757d',
+    lineHeight: 18,
+  },
+  listActionButton: {
+    padding: 8,
+    borderRadius: 6,
+  },
+  listActionIcon: {
+    fontSize: 18,
+    color: '#adb5bd',
+    fontWeight: 'bold',
+  },
+  actionMenu: {
+    position: 'absolute',
+    right: 16,
+    top: 50,
+    backgroundColor: 'white',
+    borderRadius: 8,
+    paddingVertical: 4,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 8,
+    borderWidth: 1,
+    borderColor: '#f1f3f5',
+    minWidth: 120,
+    zIndex: 1000,
+  },
+  actionMenuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    gap: 8,
+  },
+  actionMenuItemDanger: {
+    // No additional background for danger items in menu
+  },
+  actionMenuIcon: {
+    fontSize: 14,
+  },
+  actionMenuText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#495057',
+  },
+  actionMenuTextDanger: {
     color: '#d32f2f',
   },
   emptyContainer: {
