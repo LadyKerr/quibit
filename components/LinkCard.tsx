@@ -76,7 +76,7 @@ export function LinkCard({ link, onEdit, onPress, onDelete }: LinkCardProps) {
           <View style={styles.content}>
             <ThemedText style={styles.domain}>{getDomain(link.url)}</ThemedText>
             <ThemedText style={styles.date}>
-              {new Date(link.createdAt).toLocaleDateString('en-US', {
+              {new Date(link.created_at).toLocaleDateString('en-US', {
                 month: 'short',
                 day: 'numeric',
                 year: 'numeric',
