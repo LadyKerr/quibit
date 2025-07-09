@@ -144,30 +144,32 @@ export default function TabOneScreen() {
         />
 
         <View style={styles.content}>
-          <View style={styles.filterContainer}>
-            <View style={styles.filterRow}>
+          <View style={styles.searchContainer}>
+            <View style={styles.searchBar}>
+              <ThemedText style={styles.searchIcon}>🔍</ThemedText>
               <TextInput
-                style={[styles.input, styles.searchInput]}
-                placeholder="Search links..."
+                style={styles.searchInput}
+                placeholder="Search your brain..."
                 value={searchQuery}
                 onChangeText={setSearchQuery}
-                placeholderTextColor="#666"
+                placeholderTextColor="#999"
               />
               <TouchableOpacity
-                style={[styles.sortButton]}
+                style={styles.sortButton}
                 onPress={toggleSortOrder}
               >
                 <ThemedText style={styles.sortButtonText}>
-                  {sortOrder === 'newest' ? '↓ Latest' : '↑ Oldest'}
+                  {sortOrder === 'newest' ? 'Latest' : 'Oldest'}
                 </ThemedText>
               </TouchableOpacity>
             </View>
-            
+          </View>
+
+          <View style={styles.filterContainer}>
             <CategoryButtons
               categories={['All', ...categories]}
               selectedCategory={selectedCategory === '' ? 'All' : selectedCategory}
               onSelectCategory={(cat) => setSelectedCategory(cat === 'All' ? '' : cat)}
-              style={styles.filterCategories}
               categoryColors={categoryColors}
             />
           </View>
@@ -186,10 +188,13 @@ export default function TabOneScreen() {
               keyExtractor={item => item.id}
               style={styles.list}
               contentContainerStyle={styles.listContent}
+              showsVerticalScrollIndicator={false}
               ListEmptyComponent={
-                <ThemedText style={styles.emptyText}>
-                  No links saved yet. Tap the + button to add your first link!
-                </ThemedText>
+                <View style={styles.emptyContainer}>
+                  <ThemedText style={styles.emptyText}>
+                    No links saved yet. Tap the + button to add your first link!
+                  </ThemedText>
+                </View>
               }
             />
           )}
@@ -284,65 +289,72 @@ export default function TabOneScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
+    backgroundColor: '#ffffff',
   },
   container: {
     flex: 1,
     position: 'relative',
+    backgroundColor: '#ffffff',
   },
   content: {
     flex: 1,
+    backgroundColor: '#f8f9fa',
+    paddingHorizontal: 16,
   },
-  input: {
-    backgroundColor: '#f0f0f0',
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 12,
+  searchContainer: {
+    paddingTop: 16,
+    paddingBottom: 12,
+  },
+  searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f1f3f5',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    gap: 12,
+  },
+  searchIcon: {
     fontSize: 16,
+    color: '#868e96',
   },
   searchInput: {
     flex: 1,
-    marginBottom: 0,
+    fontSize: 16,
+    color: '#333',
+    padding: 0,
+  },
+  sortButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    backgroundColor: '#e9ecef',
+  },
+  sortButtonText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#495057',
+  },
+  filterContainer: {
+    paddingBottom: 16,
   },
   list: {
     flex: 1,
   },
   listContent: {
-    padding: 4,
+    paddingBottom: 20,
   },
-  loading: {
+  emptyContainer: {
     flex: 1,
     justifyContent: 'center',
+    alignItems: 'center',
+    paddingTop: 60,
   },
   emptyText: {
     textAlign: 'center',
-    marginTop: 32,
-    color: '#666',
-  },
-  filterContainer: {
-    marginBottom: 16,
-  },
-  filterRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 12,
-  },
-  sortButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    borderRadius: 8,
-    backgroundColor: '#f0f0f0',
-  },
-  sortButtonText: {
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  filterCategories: {
-    marginBottom: 8,
-  },
-  content: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
+    fontSize: 16,
+    color: '#868e96',
+    lineHeight: 24,
   },
   keyboardView: {
     flex: 1,

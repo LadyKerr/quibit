@@ -92,34 +92,46 @@ export function CategoryButtons({
 const styles = StyleSheet.create({
   categoryList: {
     flexGrow: 0,
-    marginBottom: 12,
   },
   contentContainer: {
-    paddingRight: 16,
+    paddingHorizontal: 16,
+    paddingRight: 32,
   },
   categoryButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 16,
-    marginRight: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
+    marginRight: 12,
+    borderWidth: 1,
+    borderColor: 'transparent',
   },
   categoryButtonActive: {
-    borderWidth: 2,
-    borderColor: 'rgba(0,0,0,0.1)',
+    borderColor: 'rgba(0,0,0,0.08)',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.06,
+    shadowRadius: 2,
+    elevation: 1,
   },
   categoryButtonText: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: '600',
+    textTransform: 'capitalize',
   },
   categoryButtonTextActive: {
-    fontWeight: '600',
+    fontWeight: '700',
   },
   newCategoryButton: {
-    backgroundColor: '#e3f2fd',
+    backgroundColor: '#e7f5ff',
+    borderColor: '#4263eb',
+    borderWidth: 1,
   },
   newCategoryButtonText: {
-    color: '#0a7ea4',
+    color: '#4263eb',
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: '600',
   },
 });
