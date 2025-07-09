@@ -36,6 +36,7 @@ export function AppHeader({
           <Image 
             source={require('../assets/images/icon.png')}
             style={styles.headerIcon}
+            accessibilityLabel="Quibit logo"
           />
         )}
         <View>

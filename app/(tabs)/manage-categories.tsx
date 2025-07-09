@@ -40,11 +40,12 @@ export default function ManageCategoriesScreen() {
     }
 
     setIsAdding(true);
-    // Here you would also save the selected color with the category
     const success = await addCategory(trimmedCategory);
-    setIsAdding(false);
-
+    
     if (success) {
+      // Save the selected color for the new category
+      await updateCategoryColor(trimmedCategory, selectedColor);
+      
       setModalCategoryName('');
       setSelectedColor('#FF6B6B');
       setShowAddModal(false);
@@ -52,6 +53,8 @@ export default function ManageCategoriesScreen() {
     } else {
       Alert.alert('Error', 'This category already exists');
     }
+    
+    setIsAdding(false);
   };
 
   const handleEditCategory = async (oldName: string) => {

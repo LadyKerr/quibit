@@ -5,6 +5,7 @@ import { ThemedText } from './ThemedText';
 import { ThemedView } from './ThemedView';
 import { LinkDetailModal } from './LinkDetailModal';
 import { CATEGORY_COLORS } from './CategoryButtons';
+import { getCategoryColors } from '../utils/categoryUtils';
 
 // Map of category to emoji icons
 const CATEGORY_ICONS: { [key: string]: string } = {
@@ -45,13 +46,7 @@ export function LinkCard({ link, onEdit, onPress, onDelete, categoryColors = {} 
   };
 
   const categoryIcon = CATEGORY_ICONS[link.category] || CATEGORY_ICONS.Other;
-  
-  // Use custom color if available, otherwise default
-  const customColor = categoryColors[link.category];
-  const categoryColors_display = customColor ? { 
-    background: customColor + '30', // Add transparency
-    text: customColor 
-  } : (CATEGORY_COLORS[link.category] || CATEGORY_COLORS.Other);
+  const categoryColors_display = getCategoryColors(link.category, categoryColors);
 
   return (
     <>
