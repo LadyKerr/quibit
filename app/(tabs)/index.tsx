@@ -217,17 +217,19 @@ export default function TabOneScreen() {
                 </TouchableOpacity>
               </View>
 
-              <LinkForm
-                onSubmit={handleSubmit}
-                onCancel={() => {
-                  setShowAddModal(false);
-                  setEditingLink(null);
-                }}
-                initialData={editingLink || undefined}
-                categories={categories}
-                onNewCategory={() => setShowNewCategoryModal(true)}
-                isEditing={!!editingLink}
-              />
+              <View style={styles.formContainer}>
+                <LinkForm
+                  onSubmit={handleSubmit}
+                  onCancel={() => {
+                    setShowAddModal(false);
+                    setEditingLink(null);
+                  }}
+                  initialData={editingLink || undefined}
+                  categories={categories}
+                  onNewCategory={() => setShowNewCategoryModal(true)}
+                  isEditing={!!editingLink}
+                />
+              </View>
             </KeyboardAvoidingView>
           </SafeAreaView>
         </Modal>
@@ -340,6 +342,14 @@ const styles = StyleSheet.create({
   },
   keyboardView: {
     flex: 1,
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: '#f5f5f5',
+  },
+  formContainer: {
+    flex: 1,
+    padding: 16,
   },
   modalHeader: {
     flexDirection: 'row',

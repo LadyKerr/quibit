@@ -217,6 +217,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 12,
     fontSize: 16,
+    color: '#333', // Explicit text color
   },
   inputError: {
     borderWidth: 1,
@@ -241,6 +242,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginBottom: 16,
     textAlign: 'center',
+    color: '#333', // Explicit text color
   },
   categorySection: {
     marginBottom: 16,
