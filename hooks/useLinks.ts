@@ -96,14 +96,25 @@ export const useLinks = () => {
       
       setCategories([...new Set([...defaultCategories, ...userCategories])].sort());
 
-      // Load category colors from AsyncStorage
+      // Load category colors from Supabase
       if (session?.user?.id) {
         try {
-          const colorsKey = `category_colors_${session.user.id}`;
-          const savedColors = await AsyncStorage.getItem(colorsKey);
-          if (savedColors) {
-            setCategoryColors(JSON.parse(savedColors));
-          }
+          const { data: colorsData, error: colorsError } = await supabase
+            .from('category_colors')
+            .select('category_name, color')
+            .eq('user_id', session.user.id);
+
+          if (colorsError) throw colorsError;
+
+          const colorsMap: { [key: string]: string } = {};
+          colorsData?.forEach(item => {
+            colorsMap[item.category_name] = item.color;
+          });
+          
+          setCategoryColors(colorsMap);
+
+          // Migrate existing AsyncStorage data to Supabase if needed
+          await migrateColorsFromAsyncStorage();
         } catch (error) {
           console.error('Error loading category colors:', error);
         }
@@ -225,8 +236,23 @@ export const useLinks = () => {
 
       if (error) throw error;
 
+      // Delete associated category color
+      await supabase
+        .from('category_colors')
+        .delete()
+        .eq('category_name', name)
+        .eq('user_id', session.user.id);
+
       // Update categories state
       setCategories(prev => prev.filter(cat => cat !== name));
+      
+      // Update category colors state
+      setCategoryColors(prev => {
+        const updated = { ...prev };
+        delete updated[name];
+        return updated;
+      });
+      
       return { success: true };
     } catch (error) {
       console.error('Error deleting category:', error);
@@ -302,6 +328,24 @@ export const useLinks = () => {
         .eq('category', oldName)
         .eq('user_id', session.user.id);
 
+      // Update category color if it exists
+      await supabase
+        .from('category_colors')
+        .update({ category_name: newName })
+        .eq('category_name', oldName)
+        .eq('user_id', session.user.id);
+
+      // Update category colors state
+      setCategoryColors(prev => {
+        if (prev[oldName]) {
+          const updated = { ...prev };
+          updated[newName] = updated[oldName];
+          delete updated[oldName];
+          return updated;
+        }
+        return prev;
+      });
+
       return { success: true };
     } catch (error) {
       console.error('Error editing category:', error);
@@ -309,18 +353,71 @@ export const useLinks = () => {
     }
   };
 
+  const migrateColorsFromAsyncStorage = async () => {
+    if (!session?.user?.id) return;
+
+    try {
+      const colorsKey = `category_colors_${session.user.id}`;
+      const savedColors = await AsyncStorage.getItem(colorsKey);
+      
+      if (savedColors) {
+        const colors = JSON.parse(savedColors);
+        
+        // Check if we already have colors in Supabase
+        const { data: existingColors } = await supabase
+          .from('category_colors')
+          .select('category_name')
+          .eq('user_id', session.user.id)
+          .limit(1);
+
+        // Only migrate if no colors exist in Supabase
+        if (!existingColors || existingColors.length === 0) {
+          const colorEntries = Object.entries(colors).map(([categoryName, color]) => ({
+            user_id: session.user.id,
+            category_name: categoryName,
+            color: color as string,
+          }));
+
+          if (colorEntries.length > 0) {
+            const { error } = await supabase
+              .from('category_colors')
+              .insert(colorEntries);
+
+            if (!error) {
+              // Remove from AsyncStorage after successful migration
+              await AsyncStorage.removeItem(colorsKey);
+              console.log('Successfully migrated category colors to Supabase');
+            } else {
+              console.error('Error migrating colors to Supabase:', error);
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error during color migration:', error);
+    }
+  };
+
   const updateCategoryColor = async (categoryName: string, color: string) => {
     if (!session?.user) return { success: false, error: 'Not authenticated' };
 
     try {
-      const newColors = { ...categoryColors, [categoryName]: color };
-      
-      // Save to AsyncStorage
-      const colorsKey = `category_colors_${session.user.id}`;
-      await AsyncStorage.setItem(colorsKey, JSON.stringify(newColors));
+      // Use upsert to insert or update the color
+      const { error } = await supabase
+        .from('category_colors')
+        .upsert({
+          user_id: session.user.id,
+          category_name: categoryName,
+          color: color,
+          updated_at: new Date().toISOString(),
+        }, {
+          onConflict: 'user_id,category_name'
+        });
+
+      if (error) throw error;
       
       // Update local state
-      setCategoryColors(newColors);
+      setCategoryColors(prev => ({ ...prev, [categoryName]: color }));
       
       return { success: true };
     } catch (error) {
