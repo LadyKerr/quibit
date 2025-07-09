@@ -8,7 +8,7 @@ import { useLinks } from '../../hooks/useLinks';
 import { CATEGORY_COLORS } from '../../components/CategoryButtons';
 
 export default function ManageCategoriesScreen() {
-  const { categories, addCategory, deleteCategory, editCategory } = useLinks();
+  const { categories, addCategory, deleteCategory, editCategory, updateCategoryColor, categoryColors } = useLinks();
   const [isAdding, setIsAdding] = useState(false);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const [editingCategory, setEditingCategory] = useState<string | null>(null);
@@ -17,6 +17,8 @@ export default function ManageCategoriesScreen() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [modalCategoryName, setModalCategoryName] = useState('');
   const [selectedColor, setSelectedColor] = useState('#FF6B6B');
+  const [showColorModal, setShowColorModal] = useState(false);
+  const [editingColorCategory, setEditingColorCategory] = useState<string | null>(null);
 
   // Available colors for new categories
   const availableColors = [
@@ -101,6 +103,25 @@ export default function ManageCategoriesScreen() {
     );
   };
 
+  const handleColorEdit = (category: string) => {
+    setEditingColorCategory(category);
+    setSelectedColor(categoryColors[category] || '#FF6B6B');
+    setShowColorModal(true);
+  };
+
+  const handleColorSave = async () => {
+    if (!editingColorCategory) return;
+
+    const result = await updateCategoryColor(editingColorCategory, selectedColor);
+    if (result.success) {
+      setShowColorModal(false);
+      setEditingColorCategory(null);
+      Alert.alert('Success', 'Category color updated successfully');
+    } else {
+      Alert.alert('Error', result.error || 'Failed to update category color');
+    }
+  };
+
   const DEFAULT_CATEGORIES = ['Blog', 'Tutorial', 'Video', 'Article', 'Other'];
 
   const isOriginallyDefaultCategory = (category: string) => {
@@ -160,6 +181,11 @@ export default function ManageCategoriesScreen() {
               
               {defaultCategories.map((category) => {
                 const colors = CATEGORY_COLORS[category] || CATEGORY_COLORS.Other;
+                const customColor = categoryColors[category];
+                const displayColor = customColor ? { 
+                  background: customColor + '30', // Add transparency
+                  text: customColor 
+                } : colors;
                 const isEditing = editingCategory === category;
 
                 return (
@@ -167,7 +193,7 @@ export default function ManageCategoriesScreen() {
                     <View style={styles.categoryInfo}>
                       <View style={[
                         styles.categoryBadge,
-                        { backgroundColor: colors.background }
+                        { backgroundColor: displayColor.background }
                       ]} />
                       <View>
                         {isEditing ? (
@@ -194,6 +220,12 @@ export default function ManageCategoriesScreen() {
                     <View style={styles.actions}>
                       <TouchableOpacity 
                         style={styles.editButton}
+                        onPress={() => handleColorEdit(category)}
+                      >
+                        <ThemedText style={styles.editIcon}>🎨</ThemedText>
+                      </TouchableOpacity>
+                      <TouchableOpacity 
+                        style={styles.editButton}
                         onPress={() => handleEditCategory(category)}
                       >
                         <ThemedText style={styles.editIcon}>
@@ -215,6 +247,11 @@ export default function ManageCategoriesScreen() {
               
               {customCategories.map((category) => {
                 const colors = CATEGORY_COLORS[category] || CATEGORY_COLORS.Other;
+                const customColor = categoryColors[category];
+                const displayColor = customColor ? { 
+                  background: customColor + '30', // Add transparency
+                  text: customColor 
+                } : colors;
                 const isEditing = editingCategory === category;
                 const wasOriginallyDefault = isOriginallyDefaultCategory(category);
 
@@ -248,6 +285,13 @@ export default function ManageCategoriesScreen() {
                       </View>
                     </View>
                     <View style={styles.actions}>
+                      <TouchableOpacity
+                        style={styles.editButton}
+                        onPress={() => handleColorEdit(category)}
+                        disabled={isDeleting === category}
+                      >
+                        <ThemedText style={styles.editIcon}>🎨</ThemedText>
+                      </TouchableOpacity>
                       <TouchableOpacity
                         style={styles.editButton}
                         onPress={() => handleEditCategory(category)}
@@ -342,6 +386,58 @@ export default function ManageCategoriesScreen() {
                   <ThemedText style={styles.saveButtonText}>
                     {isAdding ? 'Saving...' : 'Save'}
                   </ThemedText>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+
+        {/* Color Edit Modal */}
+        <Modal
+          visible={showColorModal}
+          animationType="slide"
+          transparent={true}
+          onRequestClose={() => setShowColorModal(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContainer}>
+              <ThemedText style={styles.modalTitle}>
+                Edit Color for "{editingColorCategory}"
+              </ThemedText>
+              
+              <View style={styles.modalSection}>
+                <ThemedText style={styles.modalLabel}>Choose Color</ThemedText>
+                <View style={styles.colorGrid}>
+                  {availableColors.map((color) => (
+                    <TouchableOpacity
+                      key={color}
+                      style={[
+                        styles.colorOption,
+                        { backgroundColor: color },
+                        selectedColor === color && styles.selectedColorOption
+                      ]}
+                      onPress={() => setSelectedColor(color)}
+                    />
+                  ))}
+                </View>
+              </View>
+
+              <View style={styles.modalButtons}>
+                <TouchableOpacity
+                  style={styles.cancelButton}
+                  onPress={() => {
+                    setShowColorModal(false);
+                    setEditingColorCategory(null);
+                  }}
+                >
+                  <ThemedText style={styles.cancelButtonText}>Cancel</ThemedText>
+                </TouchableOpacity>
+                
+                <TouchableOpacity
+                  style={styles.saveButton}
+                  onPress={handleColorSave}
+                >
+                  <ThemedText style={styles.saveButtonText}>Save Color</ThemedText>
                 </TouchableOpacity>
               </View>
             </View>

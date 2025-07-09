@@ -27,9 +27,10 @@ interface LinkCardProps {
   onEdit: (link: Link) => void;
   onPress: (url: string) => void;
   onDelete: (link: Link) => void;
+  categoryColors?: { [key: string]: string };
 }
 
-export function LinkCard({ link, onEdit, onPress, onDelete }: LinkCardProps) {
+export function LinkCard({ link, onEdit, onPress, onDelete, categoryColors = {} }: LinkCardProps) {
   const [showNotes, setShowNotes] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
 
@@ -44,7 +45,13 @@ export function LinkCard({ link, onEdit, onPress, onDelete }: LinkCardProps) {
   };
 
   const categoryIcon = CATEGORY_ICONS[link.category] || CATEGORY_ICONS.Other;
-  const categoryColors = CATEGORY_COLORS[link.category] || CATEGORY_COLORS.Other;
+  
+  // Use custom color if available, otherwise default
+  const customColor = categoryColors[link.category];
+  const categoryColors_display = customColor ? { 
+    background: customColor + '30', // Add transparency
+    text: customColor 
+  } : (CATEGORY_COLORS[link.category] || CATEGORY_COLORS.Other);
 
   return (
     <>
@@ -59,13 +66,13 @@ export function LinkCard({ link, onEdit, onPress, onDelete }: LinkCardProps) {
             <View
               style={[
                 styles.categoryBadge,
-                { backgroundColor: categoryColors.background },
+                { backgroundColor: categoryColors_display.background },
               ]}
             >
               <ThemedText
                 style={[
                   styles.categoryText,
-                  { color: categoryColors.text },
+                  { color: categoryColors_display.text },
                 ]}
               >
                 {link.category}

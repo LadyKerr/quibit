@@ -63,6 +63,7 @@ interface LinkFormProps {
   onCancel?: () => void;
   initialData?: Partial<Link>;
   categories: string[];
+  categoryColors?: { [key: string]: string };
   onNewCategory: () => void;
   isEditing?: boolean;
 }
@@ -72,6 +73,7 @@ export function LinkForm({
   onCancel,
   initialData,
   categories,
+  categoryColors = {},
   onNewCategory,
   isEditing = false,
 }: LinkFormProps) {
@@ -165,6 +167,7 @@ export function LinkForm({
           selectedCategory={category}
           onSelectCategory={setCategory}
           onNewCategory={onNewCategory}
+          categoryColors={categoryColors}
           showNewButton={true}
         />
       </View>

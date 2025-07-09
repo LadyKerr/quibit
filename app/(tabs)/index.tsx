@@ -34,6 +34,7 @@ export default function TabOneScreen() {
     searchQuery, 
     setSearchQuery,
     categories,
+    categoryColors,
     selectedCategory,
     setSelectedCategory,
     sortOrder,
@@ -128,6 +129,7 @@ export default function TabOneScreen() {
       onEdit={handleEdit}
       onPress={(url) => Linking.openURL(url)}
       onDelete={handleDelete}
+      categoryColors={categoryColors}
     />
   );
 
@@ -166,6 +168,7 @@ export default function TabOneScreen() {
               selectedCategory={selectedCategory === '' ? 'All' : selectedCategory}
               onSelectCategory={(cat) => setSelectedCategory(cat === 'All' ? '' : cat)}
               style={styles.filterCategories}
+              categoryColors={categoryColors}
             />
           </View>
 
@@ -226,6 +229,7 @@ export default function TabOneScreen() {
                   }}
                   initialData={editingLink || undefined}
                   categories={categories}
+                  categoryColors={categoryColors}
                   onNewCategory={() => setShowNewCategoryModal(true)}
                   isEditing={!!editingLink}
                 />

@@ -19,6 +19,7 @@ interface CategoryButtonsProps {
   onNewCategory?: () => void;
   showNewButton?: boolean;
   style?: object;
+  categoryColors?: { [key: string]: string };
 }
 
 export function CategoryButtons({
@@ -27,10 +28,22 @@ export function CategoryButtons({
   onSelectCategory,
   onNewCategory,
   showNewButton = false,
-  style
+  style,
+  categoryColors = {}
 }: CategoryButtonsProps) {
   const getCategoryColors = (category: string) => {
     const trimmedCategory = category.trim().replace(/[<>]/g, '');
+    
+    // If there's a custom color for this category, use it
+    if (categoryColors[trimmedCategory]) {
+      const customColor = categoryColors[trimmedCategory];
+      return { 
+        background: customColor + '30', // Add transparency
+        text: customColor 
+      };
+    }
+    
+    // Otherwise use default colors
     return CATEGORY_COLORS[trimmedCategory] || { background: '#F0F0F0', text: '#666666' };
   };
 

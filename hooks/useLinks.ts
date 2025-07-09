@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -23,6 +24,7 @@ export const useLinks = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [sortOrder, setSortOrder] = useState<SortOrder>('newest');
   const [categories, setCategories] = useState<string[]>(DEFAULT_CATEGORIES);
+  const [categoryColors, setCategoryColors] = useState<{ [key: string]: string }>({});
   const { session } = useAuth();
 
   useEffect(() => {
@@ -93,6 +95,19 @@ export const useLinks = () => {
       const userCategories = userData?.map(cat => cat.name) || [];
       
       setCategories([...new Set([...defaultCategories, ...userCategories])].sort());
+
+      // Load category colors from AsyncStorage
+      if (session?.user?.id) {
+        try {
+          const colorsKey = `category_colors_${session.user.id}`;
+          const savedColors = await AsyncStorage.getItem(colorsKey);
+          if (savedColors) {
+            setCategoryColors(JSON.parse(savedColors));
+          }
+        } catch (error) {
+          console.error('Error loading category colors:', error);
+        }
+      }
     } catch (error) {
       console.error('Error loading categories:', error);
     }
@@ -294,6 +309,26 @@ export const useLinks = () => {
     }
   };
 
+  const updateCategoryColor = async (categoryName: string, color: string) => {
+    if (!session?.user) return { success: false, error: 'Not authenticated' };
+
+    try {
+      const newColors = { ...categoryColors, [categoryName]: color };
+      
+      // Save to AsyncStorage
+      const colorsKey = `category_colors_${session.user.id}`;
+      await AsyncStorage.setItem(colorsKey, JSON.stringify(newColors));
+      
+      // Update local state
+      setCategoryColors(newColors);
+      
+      return { success: true };
+    } catch (error) {
+      console.error('Error updating category color:', error);
+      return { success: false, error: 'Failed to update category color' };
+    }
+  };
+
   const editLink = async (
     id: string,
     updates: Partial<Omit<Link, 'id' | 'created_at' | 'user_id'>>
@@ -372,7 +407,9 @@ export const useLinks = () => {
     addCategory,
     deleteCategory,
     editCategory,
+    updateCategoryColor,
     categories,
+    categoryColors,
     searchQuery,
     setSearchQuery,
     selectedCategory,
