@@ -46,7 +46,8 @@ export default function SettingsScreen() {
           style={styles.logoutButton}
           onPress={handleLogout}
         >
-          <ThemedText style={styles.logoutButtonText}>Log Out</ThemedText>          </TouchableOpacity>
+          <ThemedText style={styles.logoutButtonText}>Log Out</ThemedText>
+        </TouchableOpacity>
         </View>
         </View>
       </ThemedView>
