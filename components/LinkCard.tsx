@@ -5,6 +5,7 @@ import { ThemedText } from './ThemedText';
 import { ThemedView } from './ThemedView';
 import { LinkDetailModal } from './LinkDetailModal';
 import { CATEGORY_COLORS } from './CategoryButtons';
+import { getCategoryColors } from '../utils/categoryUtils';
 
 // Map of category to emoji icons
 const CATEGORY_ICONS: { [key: string]: string } = {
@@ -27,9 +28,10 @@ interface LinkCardProps {
   onEdit: (link: Link) => void;
   onPress: (url: string) => void;
   onDelete: (link: Link) => void;
+  categoryColors?: { [key: string]: string };
 }
 
-export function LinkCard({ link, onEdit, onPress, onDelete }: LinkCardProps) {
+export function LinkCard({ link, onEdit, onPress, onDelete, categoryColors = {} }: LinkCardProps) {
   const [showNotes, setShowNotes] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
 
@@ -44,7 +46,7 @@ export function LinkCard({ link, onEdit, onPress, onDelete }: LinkCardProps) {
   };
 
   const categoryIcon = CATEGORY_ICONS[link.category] || CATEGORY_ICONS.Other;
-  const categoryColors = CATEGORY_COLORS[link.category] || CATEGORY_COLORS.Other;
+  const categoryColors_display = getCategoryColors(link.category, categoryColors);
 
   return (
     <>
@@ -59,13 +61,13 @@ export function LinkCard({ link, onEdit, onPress, onDelete }: LinkCardProps) {
             <View
               style={[
                 styles.categoryBadge,
-                { backgroundColor: categoryColors.background },
+                { backgroundColor: categoryColors_display.background },
               ]}
             >
               <ThemedText
                 style={[
                   styles.categoryText,
-                  { color: categoryColors.text },
+                  { color: categoryColors_display.text },
                 ]}
               >
                 {link.category}
@@ -76,7 +78,7 @@ export function LinkCard({ link, onEdit, onPress, onDelete }: LinkCardProps) {
           <View style={styles.content}>
             <ThemedText style={styles.domain}>{getDomain(link.url)}</ThemedText>
             <ThemedText style={styles.date}>
-              {new Date(link.createdAt).toLocaleDateString('en-US', {
+              {new Date(link.created_at).toLocaleDateString('en-US', {
                 month: 'short',
                 day: 'numeric',
                 year: 'numeric',
@@ -152,23 +154,25 @@ export function LinkCard({ link, onEdit, onPress, onDelete }: LinkCardProps) {
 const styles = StyleSheet.create({
   card: {
     backgroundColor: 'white',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 16,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: 1,
     },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
+    shadowOpacity: 0.06,
+    shadowRadius: 10,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: '#f1f3f5',
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 12,
+    marginBottom: 16,
   },
   titleRow: {
     flex: 1,
@@ -178,60 +182,65 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     lineHeight: 24,
+    color: '#212529',
   },
   categoryBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
   },
   categoryText: {
     fontSize: 12,
-    fontWeight: '500',
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   content: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 16,
   },
   domain: {
     fontSize: 14,
-    color: '#666',
+    color: '#868e96',
+    fontWeight: '500',
   },
   date: {
     fontSize: 12,
-    color: '#999',
+    color: '#adb5bd',
+    fontWeight: '500',
   },
   notesButton: {
     paddingVertical: 8,
-    marginBottom: 0,
+    marginBottom: 4,
   },
   notesButtonText: {
     fontSize: 14,
-    color: '#0a7ea4',
-    fontWeight: '500',
+    color: '#4263eb',
+    fontWeight: '600',
   },
   notesContainer: {
-    marginBottom: 12,
-    paddingTop: 8,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#eee',
+    marginBottom: 16,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#f1f3f5',
   },
   notes: {
     fontSize: 14,
-    color: '#666',
+    color: '#495057',
     lineHeight: 20,
   },
   actions: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    gap: 16,
-    marginTop: 0,
+    gap: 20,
+    marginTop: 4,
   },
   iconButton: {
-    padding: 4,
+    padding: 6,
   },
   iconText: {
-    fontSize: 20,
+    fontSize: 18,
   },
 });

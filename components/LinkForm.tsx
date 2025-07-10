@@ -63,6 +63,7 @@ interface LinkFormProps {
   onCancel?: () => void;
   initialData?: Partial<Link>;
   categories: string[];
+  categoryColors?: { [key: string]: string };
   onNewCategory: () => void;
   isEditing?: boolean;
 }
@@ -72,6 +73,7 @@ export function LinkForm({
   onCancel,
   initialData,
   categories,
+  categoryColors = {},
   onNewCategory,
   isEditing = false,
 }: LinkFormProps) {
@@ -165,6 +167,7 @@ export function LinkForm({
           selectedCategory={category}
           onSelectCategory={setCategory}
           onNewCategory={onNewCategory}
+          categoryColors={categoryColors}
           showNewButton={true}
         />
       </View>
@@ -217,6 +220,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginBottom: 12,
     fontSize: 16,
+    color: '#333', // Explicit text color
   },
   inputError: {
     borderWidth: 1,
@@ -241,6 +245,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginBottom: 16,
     textAlign: 'center',
+    color: '#333', // Explicit text color
   },
   categorySection: {
     marginBottom: 16,

@@ -54,6 +54,31 @@ export interface Database {
           updated_at?: string
         }
       }
+      category_colors: {
+        Row: {
+          id: string
+          user_id: string
+          category_name: string
+          color: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          category_name: string
+          color: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          category_name?: string
+          color?: string
+          updated_at?: string
+        }
+      }
     }
     Views: {
       [_ in never]: never

@@ -67,7 +67,7 @@ export default function TabLayout() {
         name="notes"
         options={{
           title: 'Notes',
-          tabBarIcon: ({ color }) => <IconSymbol size={24} name="notebook" color={color} />,
+          tabBarIcon: ({ color }) => <IconSymbol size={24} name="note.text" color={color} />,
         }}
       />
       <Tabs.Screen

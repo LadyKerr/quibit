@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
 import { ThemedText } from './ThemedText';
 
@@ -19,7 +19,21 @@ interface CategoryButtonsProps {
   onNewCategory?: () => void;
   showNewButton?: boolean;
   style?: object;
+  categoryColors?: { [key: string]: string };
 }
+
+// Helper function to add transparency to hex colors
+const addTransparency = (hexColor: string, opacity: number = 0.2): string => {
+  // Remove # if present
+  const hex = hexColor.replace('#', '');
+  
+  // Convert to RGB
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+  
+  return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+};
 
 export function CategoryButtons({
   categories,
@@ -27,11 +41,37 @@ export function CategoryButtons({
   onSelectCategory,
   onNewCategory,
   showNewButton = false,
-  style
+  style,
+  categoryColors = {}
 }: CategoryButtonsProps) {
+  const sanitizedCategories = useMemo(() => {
+    return categories.map(category => category.trim().replace(/[<>]/g, ''));
+  }, [categories]);
+
+  const memoizedCategoryColors = useMemo(() => {
+    const colorMap: { [key: string]: { background: string; text: string } } = {};
+
+    sanitizedCategories.forEach(trimmedCategory => {
+      if (categoryColors[trimmedCategory]) {
+        const customColor = categoryColors[trimmedCategory];
+        colorMap[trimmedCategory] = {
+          background: addTransparency(customColor),
+          text: customColor
+        };
+      } else {
+        colorMap[trimmedCategory] = CATEGORY_COLORS[trimmedCategory] || { 
+          background: '#F0F0F0', 
+          text: '#666666' 
+        };
+      }
+    });
+    
+    return colorMap;
+  }, [sanitizedCategories, categoryColors]);
+
   const getCategoryColors = (category: string) => {
     const trimmedCategory = category.trim().replace(/[<>]/g, '');
-    return CATEGORY_COLORS[trimmedCategory] || { background: '#F0F0F0', text: '#666666' };
+    return memoizedCategoryColors[trimmedCategory] || { background: '#F0F0F0', text: '#666666' };
   };
 
   return (
@@ -79,34 +119,46 @@ export function CategoryButtons({
 const styles = StyleSheet.create({
   categoryList: {
     flexGrow: 0,
-    marginBottom: 12,
   },
   contentContainer: {
-    paddingRight: 16,
+    paddingHorizontal: 16,
+    paddingRight: 32,
   },
   categoryButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 16,
-    marginRight: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
+    marginRight: 12,
+    borderWidth: 1,
+    borderColor: 'transparent',
   },
   categoryButtonActive: {
-    borderWidth: 2,
-    borderColor: 'rgba(0,0,0,0.1)',
+    borderColor: 'rgba(0,0,0,0.08)',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.06,
+    shadowRadius: 2,
+    elevation: 1,
   },
   categoryButtonText: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: '600',
+    textTransform: 'capitalize',
   },
   categoryButtonTextActive: {
-    fontWeight: '600',
+    fontWeight: '700',
   },
   newCategoryButton: {
-    backgroundColor: '#e3f2fd',
+    backgroundColor: '#e7f5ff',
+    borderColor: '#4263eb',
+    borderWidth: 1,
   },
   newCategoryButtonText: {
-    color: '#0a7ea4',
+    color: '#4263eb',
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: '600',
   },
 });

@@ -10,7 +10,6 @@ import {
   SafeAreaView,
   Modal,
   Alert,
-  Image,
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
@@ -21,6 +20,7 @@ import { ThemedText } from '../../components/ThemedText';
 import { CategoryButtons } from '../../components/CategoryButtons';
 import { LinkCard } from '../../components/LinkCard';
 import { LinkForm } from '../../components/LinkForm';
+import { AppHeader } from '../../components/AppHeader';
 import { useAuth } from '../../contexts/AuthContext';
 
 export default function TabOneScreen() {
@@ -34,6 +34,7 @@ export default function TabOneScreen() {
     searchQuery, 
     setSearchQuery,
     categories,
+    categoryColors,
     selectedCategory,
     setSelectedCategory,
     sortOrder,
@@ -128,56 +129,48 @@ export default function TabOneScreen() {
       onEdit={handleEdit}
       onPress={(url) => Linking.openURL(url)}
       onDelete={handleDelete}
+      categoryColors={categoryColors}
     />
   );
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <ThemedView style={styles.container}>
-        <View style={styles.header}>
-          <View style={styles.headerLeft}>
-            <Image 
-              source={require('../../assets/images/icon.png')}
-              style={styles.headerIcon}
-            />
-            <ThemedText style={styles.headerTitle}>Quibit</ThemedText>
-          </View>
-          <TouchableOpacity
-            style={styles.headerFab}
-            onPress={() => {
-              setEditingLink(null);
-              setShowAddModal(true);
-            }}
-          >
-            <ThemedText style={styles.fabText}>+</ThemedText>
-          </TouchableOpacity>
-        </View>
+        <AppHeader 
+          onAddPress={() => {
+            setEditingLink(null);
+            setShowAddModal(true);
+          }}
+        />
 
         <View style={styles.content}>
-          <View style={styles.filterContainer}>
-            <View style={styles.filterRow}>
+          <View style={styles.searchContainer}>
+            <View style={styles.searchBar}>
+              <ThemedText style={styles.searchIcon}>🔍</ThemedText>
               <TextInput
-                style={[styles.input, styles.searchInput]}
-                placeholder="Search links..."
+                style={styles.searchInput}
+                placeholder="Search your brain..."
                 value={searchQuery}
                 onChangeText={setSearchQuery}
-                placeholderTextColor="#666"
+                placeholderTextColor="#999"
               />
               <TouchableOpacity
-                style={[styles.sortButton]}
+                style={styles.sortButton}
                 onPress={toggleSortOrder}
               >
                 <ThemedText style={styles.sortButtonText}>
-                  {sortOrder === 'newest' ? '↓ Latest' : '↑ Oldest'}
+                  {sortOrder === 'newest' ? 'Latest' : 'Oldest'}
                 </ThemedText>
               </TouchableOpacity>
             </View>
-            
+          </View>
+
+          <View style={styles.filterContainer}>
             <CategoryButtons
               categories={['All', ...categories]}
               selectedCategory={selectedCategory === '' ? 'All' : selectedCategory}
               onSelectCategory={(cat) => setSelectedCategory(cat === 'All' ? '' : cat)}
-              style={styles.filterCategories}
+              categoryColors={categoryColors}
             />
           </View>
 
@@ -195,10 +188,13 @@ export default function TabOneScreen() {
               keyExtractor={item => item.id}
               style={styles.list}
               contentContainerStyle={styles.listContent}
+              showsVerticalScrollIndicator={false}
               ListEmptyComponent={
-                <ThemedText style={styles.emptyText}>
-                  No links saved yet. Tap the + button to add your first link!
-                </ThemedText>
+                <View style={styles.emptyContainer}>
+                  <ThemedText style={styles.emptyText}>
+                    No links saved yet. Tap the + button to add your first link!
+                  </ThemedText>
+                </View>
               }
             />
           )}
@@ -229,17 +225,20 @@ export default function TabOneScreen() {
                 </TouchableOpacity>
               </View>
 
-              <LinkForm
-                onSubmit={handleSubmit}
-                onCancel={() => {
-                  setShowAddModal(false);
-                  setEditingLink(null);
-                }}
-                initialData={editingLink || undefined}
-                categories={categories}
-                onNewCategory={() => setShowNewCategoryModal(true)}
-                isEditing={!!editingLink}
-              />
+              <View style={styles.formContainer}>
+                <LinkForm
+                  onSubmit={handleSubmit}
+                  onCancel={() => {
+                    setShowAddModal(false);
+                    setEditingLink(null);
+                  }}
+                  initialData={editingLink || undefined}
+                  categories={categories}
+                  categoryColors={categoryColors}
+                  onNewCategory={() => setShowNewCategoryModal(true)}
+                  isEditing={!!editingLink}
+                />
+              </View>
             </KeyboardAvoidingView>
           </SafeAreaView>
         </Modal>
@@ -290,112 +289,83 @@ export default function TabOneScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
+    backgroundColor: '#ffffff',
   },
   container: {
     flex: 1,
     position: 'relative',
+    backgroundColor: '#ffffff',
   },
   content: {
     flex: 1,
-    padding: 16,
-    position: 'relative',
+    backgroundColor: '#f8f9fa',
+    paddingHorizontal: 16,
   },
-  input: {
-    backgroundColor: '#f0f0f0',
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 12,
+  searchContainer: {
+    paddingTop: 16,
+    paddingBottom: 12,
+  },
+  searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f1f3f5',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    gap: 12,
+  },
+  searchIcon: {
     fontSize: 16,
+    color: '#868e96',
   },
   searchInput: {
     flex: 1,
-    marginBottom: 0,
+    fontSize: 16,
+    color: '#333',
+    padding: 0,
+  },
+  sortButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    backgroundColor: '#e9ecef',
+  },
+  sortButtonText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#495057',
+  },
+  filterContainer: {
+    paddingBottom: 16,
   },
   list: {
     flex: 1,
   },
   listContent: {
-    padding: 4,
+    paddingBottom: 20,
   },
-  loading: {
+  emptyContainer: {
     flex: 1,
     justifyContent: 'center',
+    alignItems: 'center',
+    paddingTop: 60,
   },
   emptyText: {
     textAlign: 'center',
-    marginTop: 32,
-    color: '#666',
+    fontSize: 16,
+    color: '#868e96',
+    lineHeight: 24,
   },
-  filterContainer: {
-    marginBottom: 16,
-  },
-  filterRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 12,
-  },
-  sortButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    borderRadius: 8,
-    backgroundColor: '#f0f0f0',
-  },
-  sortButtonText: {
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  filterCategories: {
-    marginBottom: 8,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 16,
-    paddingTop: 16,
-  },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  headerIcon: {
-    width: 60,
-    height: 60,
-    marginRight: 0,
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-  },
-  headerFab: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#4B7BEC',
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  fabText: {
-    color: '#fff',
-    fontSize: 24,
-    fontWeight: '400',
-    lineHeight: 28,
+  keyboardView: {
+    flex: 1,
   },
   modalContainer: {
     flex: 1,
     backgroundColor: '#f5f5f5',
   },
-  keyboardView: {
+  formContainer: {
     flex: 1,
+    padding: 16,
   },
   modalHeader: {
     flexDirection: 'row',

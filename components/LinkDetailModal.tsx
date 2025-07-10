@@ -22,7 +22,7 @@ export function LinkDetailModal({
   onDelete,
   onVisit 
 }: LinkDetailModalProps) {
-  const formattedDate = new Date(link.createdAt).toLocaleDateString('en-US', {
+  const formattedDate = new Date(link.created_at).toLocaleDateString('en-US', {
     weekday: 'long',
     year: 'numeric',
     month: 'long',
