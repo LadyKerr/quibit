@@ -1,23 +1,35 @@
 import React, { useState } from 'react';
 import { View, FlatList, TouchableOpacity, Modal, StyleSheet, TextInput, SafeAreaView, Alert, TouchableWithoutFeedback } from 'react-native';
 import { useNotes, Note } from '../../hooks/useNotes';
+import { useSearch } from '../../hooks/useSearch';
 import { NoteForm } from '../../components/NoteForm';
+import { SearchBar } from '../../components/SearchBar';
 import { ThemedView } from '../../components/ThemedView';
 import { ThemedText } from '../../components/ThemedText';
 import { AppHeader } from '../../components/AppHeader';
 
 export default function NotesScreen() {
-  const { notes, addNote, editNote, deleteNote } = useNotes();
+  const { notes: allNotes, addNote, editNote, deleteNote } = useNotes();
+  
+  // Use the search hook
+  const {
+    searchQuery,
+    setSearchQuery,
+    sortBy,
+    setSortBy,
+    filters,
+    setFilters,
+    items: searchedNotes,
+    totalCount,
+    filteredCount,
+    hasActiveFilters,
+    clearAll,
+  } = useSearch(allNotes, ['title', 'content']);
+  
   const [isModalVisible, setModalVisible] = useState(false);
   const [editingNote, setEditingNote] = useState<Note | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'cards' | 'list'>('cards');
   const [showActionMenu, setShowActionMenu] = useState<string | null>(null);
-
-  const filteredNotes = notes.filter(note =>
-    note.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    note.content.toLowerCase().includes(searchQuery.toLowerCase())
-  );
 
   const handleAddNote = async (data: { title: string; content: string }) => {
     await addNote(data.title, data.content);
@@ -167,7 +179,10 @@ export default function NotesScreen() {
   const renderEmptyComponent = () => (
     <View style={styles.emptyContainer}>
       <ThemedText style={styles.emptyText}>
-        No notes yet. Tap the + button to add your first note!
+        {hasActiveFilters 
+          ? "No notes match your search criteria. Try adjusting your filters."
+          : "No notes yet. Tap the + button to add your first note!"
+        }
       </ThemedText>
     </View>
   );
@@ -185,24 +200,25 @@ export default function NotesScreen() {
         <TouchableWithoutFeedback onPress={() => setShowActionMenu(null)}>
           <View style={styles.content}>
             {/* Search Bar */}
-            <View style={styles.searchContainer}>
-              <View style={styles.searchBar}>
-                <ThemedText style={styles.searchIcon}>🔍</ThemedText>
-                <TextInput
-                  style={styles.searchInput}
-                  placeholder="Search notes..."
-                  value={searchQuery}
-                  onChangeText={setSearchQuery}
-                  placeholderTextColor="#999"
-                />
-              </View>
-            </View>
+            <SearchBar
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              sortBy={sortBy}
+              onSortChange={setSortBy}
+              filters={filters}
+              onFiltersChange={setFilters}
+              availableCategories={[]} // Notes don't have categories by default
+              placeholder="Search notes..."
+              showCategoryFilter={false}
+              showNotesFilter={false}
+              hasActiveFilters={hasActiveFilters}
+              onClearAll={clearAll}
+              filteredCount={filteredCount}
+              totalCount={totalCount}
+            />
 
             {/* Header with count and view toggle */}
             <View style={styles.headerRow}>
-              <ThemedText style={styles.notesCount}>
-                {filteredNotes.length} Note{filteredNotes.length !== 1 ? 's' : ''}
-              </ThemedText>
               <View style={styles.viewToggle}>
                 <TouchableOpacity
                   style={[
@@ -232,11 +248,11 @@ export default function NotesScreen() {
             </View>
 
             <FlatList
-              data={filteredNotes}
+              data={searchedNotes}
               keyExtractor={item => item.id}
               renderItem={viewMode === 'cards' ? renderNoteCard : renderNoteList}
               ListEmptyComponent={renderEmptyComponent}
-              contentContainerStyle={filteredNotes.length === 0 ? styles.emptyList : styles.listContent}
+              contentContainerStyle={searchedNotes.length === 0 ? styles.emptyList : styles.listContent}
               showsVerticalScrollIndicator={false}
               onScrollBeginDrag={() => setShowActionMenu(null)}
             />
@@ -271,29 +287,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f8f9fa',
     paddingHorizontal: 16,
-  },
-  searchContainer: {
-    paddingTop: 16,
-    paddingBottom: 12,
-  },
-  searchBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#f1f3f5',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    gap: 12,
-  },
-  searchIcon: {
-    fontSize: 16,
-    color: '#868e96',
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 16,
-    color: '#333',
-    padding: 0,
   },
   headerRow: {
     flexDirection: 'row',
