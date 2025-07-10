@@ -44,14 +44,14 @@ export function CategoryButtons({
   style,
   categoryColors = {}
 }: CategoryButtonsProps) {
-  // Memoize the color mapping to avoid recalculation on every render
+  const sanitizedCategories = useMemo(() => {
+    return categories.map(category => category.trim().replace(/[<>]/g, ''));
+  }, [categories]);
+
   const memoizedCategoryColors = useMemo(() => {
     const colorMap: { [key: string]: { background: string; text: string } } = {};
-    
-    // Pre-compute colors for all categories
-    categories.forEach(category => {
-      const trimmedCategory = category.trim().replace(/[<>]/g, '');
-      
+
+    sanitizedCategories.forEach(trimmedCategory => {
       if (categoryColors[trimmedCategory]) {
         const customColor = categoryColors[trimmedCategory];
         colorMap[trimmedCategory] = {
@@ -67,7 +67,7 @@ export function CategoryButtons({
     });
     
     return colorMap;
-  }, [categories, categoryColors]);
+  }, [sanitizedCategories, categoryColors]);
 
   const getCategoryColors = (category: string) => {
     const trimmedCategory = category.trim().replace(/[<>]/g, '');

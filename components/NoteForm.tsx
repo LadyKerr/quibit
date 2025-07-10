@@ -74,6 +74,9 @@ export function NoteForm({ onSubmit, onClose, initialData }: NoteFormProps) {
                 ]}
                 onPress={handleSubmit}
                 disabled={isButtonDisabled}
+                accessibilityLabel={initialData ? 'Save Changes' : 'Save Note'}
+                accessibilityHint={isButtonDisabled ? 'Button is disabled. Please enter a title to enable saving.' : 'Tap to save your note'}
+                accessibilityState={{ disabled: isButtonDisabled }}
               >
                 <ThemedText style={styles.buttonText}>
                   {initialData ? 'Save Changes' : 'Save Note'}
