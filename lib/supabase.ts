@@ -5,8 +5,13 @@ import Constants from 'expo-constants';
 import * as Linking from 'expo-linking';
 import { Database } from './types';
 
-const supabaseUrl = Constants.expoConfig?.extra?.supabaseUrl as string;
-const supabaseAnonKey = Constants.expoConfig?.extra?.supabaseAnonKey as string;
+// Try to get from Constants first, then fallback to process.env for development
+const supabaseUrl = Constants.expoConfig?.extra?.supabaseUrl || 
+                   process.env.EXPO_PUBLIC_SUPABASE_URL || 
+                   'https://placeholder.supabase.co';
+const supabaseAnonKey = Constants.expoConfig?.extra?.supabaseAnonKey || 
+                       process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || 
+                       'placeholder-anon-key';
 
 if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase environment variables');

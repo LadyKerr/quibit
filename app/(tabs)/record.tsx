@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, SafeAreaView, TouchableOpacity, Alert, FlatList } from 'react-native';
 import { ThemedView } from '../../components/ThemedView';
 import { ThemedText } from '../../components/ThemedText';
 import { AppHeader } from '../../components/AppHeader';
+import { AudioPlayer } from '../../components/AudioPlayer';
 import { useVoiceNotes } from '../../hooks/useVoiceNotes';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -16,10 +17,27 @@ export default function RecordScreen() {
     stopRecording,
     saveRecording,
     deleteVoiceNote,
+    addTranscript,
     formatDuration,
   } = useVoiceNotes();
 
   const [recordingUri, setRecordingUri] = useState<string | null>(null);
+  const [waveformData, setWaveformData] = useState<number[]>(Array.from({ length: 20 }, () => Math.random() * 40 + 10));
+
+  // Update waveform animation during recording
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isRecording) {
+      interval = setInterval(() => {
+        setWaveformData(Array.from({ length: 20 }, () => Math.random() * 40 + 10));
+      }, 200);
+    }
+    return () => {
+      if (interval) {
+        clearInterval(interval);
+      }
+    };
+  }, [isRecording]);
 
   const handleStartRecording = async () => {
     try {
@@ -44,13 +62,33 @@ export default function RecordScreen() {
     if (!recordingUri) return;
     
     try {
-      await saveRecording(recordingUri);
+      const voiceNote = await saveRecording(recordingUri);
       setRecordingUri(null);
+      
+      // Add a mock transcription after a short delay to simulate AI processing
+      if (voiceNote) {
+        setTimeout(async () => {
+          const mockTranscript = generateMockTranscript();
+          await addTranscript(voiceNote.id, mockTranscript);
+        }, 1000);
+      }
+      
       Alert.alert('Success', 'Voice note saved successfully!');
     } catch (error) {
       Alert.alert('Error', 'Failed to save recording');
       console.error('Save recording error:', error);
     }
+  };
+
+  const generateMockTranscript = () => {
+    const transcripts = [
+      "This is a sample transcription of your voice note. In a real implementation, this would be generated using AI transcription services.",
+      "Meeting notes from today's discussion about project timeline and deliverables.",
+      "Reminder to follow up on the quarterly budget planning and resource allocation.",
+      "Ideas for the new feature implementation and user experience improvements.",
+      "Quick thoughts about the book I'm reading and key takeaways from the chapter."
+    ];
+    return transcripts[Math.floor(Math.random() * transcripts.length)];
   };
 
   const handleDiscardRecording = () => {
@@ -86,9 +124,7 @@ export default function RecordScreen() {
           </ThemedText>
         )}
       </View>
-      <TouchableOpacity style={styles.playButton}>
-        <Ionicons name="play" size={20} color="#007AFF" />
-      </TouchableOpacity>
+      <AudioPlayer uri={item.uri} />
     </View>
   );
 
@@ -122,14 +158,14 @@ export default function RecordScreen() {
         <ThemedText style={styles.recordingText}>Recording</ThemedText>
       </View>
       
-      {/* Simple waveform placeholder */}
+      {/* Dynamic waveform visualization */}
       <View style={styles.waveformContainer}>
-        {Array.from({ length: 20 }).map((_, index) => (
+        {waveformData.map((height, index) => (
           <View 
             key={index} 
             style={[
               styles.waveformBar,
-              { height: Math.random() * 40 + 10 }
+              { height }
             ]} 
           />
         ))}
@@ -400,15 +436,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#888',
     fontStyle: 'italic',
-  },
-  playButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: '#E8F4FF',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginLeft: 12,
   },
   floatingRecordButton: {
     position: 'absolute',
