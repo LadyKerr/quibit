@@ -97,7 +97,7 @@ export function useVoiceNotes() {
 
       const uri = recording.getURI();
       setRecording(null);
-      setRecordingDuration(0);
+      // Don't reset recordingDuration here - preserve it for saveRecording
 
       return uri;
     } catch (error) {
@@ -127,7 +127,7 @@ export function useVoiceNotes() {
       const updatedNotes = [newVoiceNote, ...voiceNotes];
       await saveVoiceNotes(updatedNotes);
       
-      // Reset recording duration
+      // Reset recording duration after successful save
       setRecordingDuration(0);
       
       return newVoiceNote;
@@ -149,6 +149,10 @@ export function useVoiceNotes() {
     await saveVoiceNotes(updatedNotes);
   };
 
+  const discardRecording = () => {
+    setRecordingDuration(0);
+  };
+
   const formatDuration = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -166,6 +170,7 @@ export function useVoiceNotes() {
     saveRecording,
     deleteVoiceNote,
     addTranscript,
+    discardRecording,
     formatDuration,
   };
 }

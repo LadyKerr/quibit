@@ -18,6 +18,7 @@ export default function RecordScreen() {
     saveRecording,
     deleteVoiceNote,
     addTranscript,
+    discardRecording,
     formatDuration,
   } = useVoiceNotes();
 
@@ -93,6 +94,7 @@ export default function RecordScreen() {
 
   const handleDiscardRecording = () => {
     setRecordingUri(null);
+    discardRecording();
   };
 
   const handleDeleteNote = async (id: string) => {
@@ -135,7 +137,7 @@ export default function RecordScreen() {
       </View>
       <ThemedText style={styles.emptyTitle}>Start Recording</ThemedText>
       <ThemedText style={styles.emptyDescription}>
-        Capture your thoughts with voice notes. They'll be transcribed automatically for easy searching.
+        Capture your thoughts with voice notes. They&apos;ll be transcribed automatically for easy searching.
       </ThemedText>
       <TouchableOpacity 
         style={styles.recordButton}
