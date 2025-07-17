@@ -4,7 +4,6 @@ import { ThemedText } from './ThemedText';
 import { CategoryButtons } from './CategoryButtons';
 import { Link } from '../hooks/useLinks';
 
-const URL_REGEX = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/;
 const MAX_URL_LENGTH = 2048;
 const BLOCKED_DOMAINS = ['example.com', 'evil.com']; // Add domains you want to block
 
@@ -22,8 +21,8 @@ const validateUrl = (url: string): UrlValidationResult => {
     return { isValid: false, error: 'URL is too long' };
   }
 
-  let processedUrl = url.trim().toLowerCase();
-  if (!processedUrl.startsWith('http')) {
+  let processedUrl = url.trim();
+  if (!processedUrl.toLowerCase().startsWith('http')) {
     processedUrl = `https://${processedUrl}`;
   }
 
@@ -41,9 +40,10 @@ const validateUrl = (url: string): UrlValidationResult => {
       return { isValid: false, error: 'Only HTTP and HTTPS protocols are allowed' };
     }
 
-    // Check URL format with regex
-    if (!URL_REGEX.test(processedUrl)) {
-      return { isValid: false, error: 'Invalid URL format' };
+    // Basic hostname validation - must have at least one dot and valid characters
+    const hostname = urlObj.hostname;
+    if (!hostname.includes('.') || hostname.startsWith('.') || hostname.endsWith('.')) {
+      return { isValid: false, error: 'Invalid domain name' };
     }
 
     return { isValid: true };

@@ -3,8 +3,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 
-export type SortOrder = 'newest' | 'oldest';
-
 export interface Link {
   id: string;
   title: string;
@@ -20,9 +18,6 @@ const DEFAULT_CATEGORIES = ['Blog', 'Tutorial', 'Video', 'Article', 'Other'];
 export const useLinks = () => {
   const [links, setLinks] = useState<Link[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
-  const [sortOrder, setSortOrder] = useState<SortOrder>('newest');
   const [categories, setCategories] = useState<string[]>(DEFAULT_CATEGORIES);
   const [categoryColors, setCategoryColors] = useState<{ [key: string]: string }>({});
   const { session } = useAuth();
@@ -471,32 +466,8 @@ export const useLinks = () => {
     }
   };
 
-  const filteredLinks = links
-    .filter((link) => {
-      if (!searchQuery.trim()) {
-        // If no search query, only filter by category
-        return !selectedCategory || link.category === selectedCategory;
-      }
-
-      const query = searchQuery.trim().toLowerCase();
-      const matchesSearch = [
-        link.title || '',
-        link.url || '',
-        link.notes || ''
-      ].some(field => field.toLowerCase().includes(query));
-
-      const matchesCategory = !selectedCategory || link.category === selectedCategory;
-
-      return matchesSearch && matchesCategory;
-    })
-    .sort((a, b) => {
-      const dateA = new Date(a.created_at).getTime();
-      const dateB = new Date(b.created_at).getTime();
-      return sortOrder === 'newest' ? dateB - dateA : dateA - dateB;
-    });
-
   return {
-    links: filteredLinks,
+    links,
     loading,
     addLink,
     editLink,
@@ -507,11 +478,5 @@ export const useLinks = () => {
     updateCategoryColor,
     categories,
     categoryColors,
-    searchQuery,
-    setSearchQuery,
-    selectedCategory,
-    setSelectedCategory,
-    sortOrder,
-    setSortOrder,
   };
 };

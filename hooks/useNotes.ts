@@ -5,7 +5,7 @@ export interface Note {
   id: string;
   title: string;
   content: string;
-  createdAt: string;
+  created_at: string;
 }
 
 export function useNotes() {
@@ -38,7 +38,7 @@ export function useNotes() {
       id: Date.now().toString(),
       title,
       content,
-      createdAt: new Date().toISOString(),
+      created_at: new Date().toISOString(),
     };
     const updatedNotes = [newNote, ...notes];
     await saveNotes(updatedNotes);

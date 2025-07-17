@@ -4,7 +4,8 @@ Quibit is a React Native + Expo app that helps users save and organize content t
 - Record voice notes
 - Transcribe those voice notes for searchable reference
 
-Use `AsyncStorage` for local data persistence. Each saved item should include a title, type (link or voice note), and timestamp. Voice recordings use `expo-av` and transcripts are generated via an AI API (e.g., OpenAI Whisper).
+Use `AsyncStorage` for local data persistence. The db for the app is supabase. 
+Each saved item should include a title, type (link or voice note), and timestamp. Voice recordings use `expo-av` and transcripts are generated via an AI API (e.g., OpenAI Whisper).
 
 The UI should be minimal, accessible, and easy to navigate. Prioritize offline usability and quick input for both text and audio.
 

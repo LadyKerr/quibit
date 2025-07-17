@@ -14,32 +14,45 @@ import {
   Platform,
 } from 'react-native';
 import { useLinks } from '../../hooks/useLinks';
+import { useSearch } from '../../hooks/useSearch';
 import type { Link as LinkType } from '../../hooks/useLinks';
 import { ThemedView } from '../../components/ThemedView';
 import { ThemedText } from '../../components/ThemedText';
 import { CategoryButtons } from '../../components/CategoryButtons';
 import { LinkCard } from '../../components/LinkCard';
 import { LinkForm } from '../../components/LinkForm';
+import { SearchBar } from '../../components/SearchBar';
 import { AppHeader } from '../../components/AppHeader';
 import { useAuth } from '../../contexts/AuthContext';
 
 export default function TabOneScreen() {
   const { 
-    links, 
+    links: allLinks, 
     loading, 
     addLink,
     editLink,
     deleteLink,
     addCategory,
-    searchQuery, 
-    setSearchQuery,
     categories,
     categoryColors,
-    selectedCategory,
-    setSelectedCategory,
-    sortOrder,
-    setSortOrder,
   } = useLinks();
+  
+  // Use the search hook
+  const {
+    searchQuery,
+    setSearchQuery,
+    sortBy,
+    setSortBy,
+    filters,
+    setFilters,
+    updateFilter,
+    items: filteredLinks,
+    totalCount,
+    filteredCount,
+    availableCategories,
+    hasActiveFilters,
+    clearAll,
+  } = useSearch(allLinks, ['title', 'url', 'notes']);
   
   const [showAddModal, setShowAddModal] = useState(false);
   const [showNewCategoryModal, setShowNewCategoryModal] = useState(false);
@@ -53,9 +66,9 @@ export default function TabOneScreen() {
       hasSession: !!session,
       userId: session?.user?.id,
       loading,
-      linksCount: links.length
+      linksCount: allLinks.length
     });
-  }, [session, loading, links]);
+  }, [session, loading, allLinks]);
 
   const handleCreateCategory = async () => {
     const trimmedCategory = newCategoryName.trim();
@@ -71,10 +84,6 @@ export default function TabOneScreen() {
     } else {
       Alert.alert('Error', 'This category already exists');
     }
-  };
-
-  const toggleSortOrder = () => {
-    setSortOrder(current => current === 'newest' ? 'oldest' : 'newest');
   };
 
   const handleDelete = (link: LinkType) => {
@@ -144,35 +153,22 @@ export default function TabOneScreen() {
         />
 
         <View style={styles.content}>
-          <View style={styles.searchContainer}>
-            <View style={styles.searchBar}>
-              <ThemedText style={styles.searchIcon}>🔍</ThemedText>
-              <TextInput
-                style={styles.searchInput}
-                placeholder="Search your brain..."
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-                placeholderTextColor="#999"
-              />
-              <TouchableOpacity
-                style={styles.sortButton}
-                onPress={toggleSortOrder}
-              >
-                <ThemedText style={styles.sortButtonText}>
-                  {sortOrder === 'newest' ? 'Latest' : 'Oldest'}
-                </ThemedText>
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          <View style={styles.filterContainer}>
-            <CategoryButtons
-              categories={['All', ...categories]}
-              selectedCategory={selectedCategory === '' ? 'All' : selectedCategory}
-              onSelectCategory={(cat) => setSelectedCategory(cat === 'All' ? '' : cat)}
-              categoryColors={categoryColors}
-            />
-          </View>
+          <SearchBar
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            sortBy={sortBy}
+            onSortChange={setSortBy}
+            filters={filters}
+            onFiltersChange={setFilters}
+            availableCategories={availableCategories}
+            placeholder="Search your brain..."
+            showCategoryFilter={true}
+            showNotesFilter={true}
+            hasActiveFilters={hasActiveFilters}
+            onClearAll={clearAll}
+            filteredCount={filteredCount}
+            totalCount={totalCount}
+          />
 
           {loading || !session ? (
             <View style={styles.loadingContainer}>
@@ -183,7 +179,7 @@ export default function TabOneScreen() {
             </View>
           ) : (
             <FlatList
-              data={links}
+              data={filteredLinks}
               renderItem={renderItem}
               keyExtractor={item => item.id}
               style={styles.list}
@@ -192,7 +188,10 @@ export default function TabOneScreen() {
               ListEmptyComponent={
                 <View style={styles.emptyContainer}>
                   <ThemedText style={styles.emptyText}>
-                    No links saved yet. Tap the + button to add your first link!
+                    {hasActiveFilters 
+                      ? "No links match your search criteria. Try adjusting your filters."
+                      : "No links saved yet. Tap the + button to add your first link!"
+                    }
                   </ThemedText>
                 </View>
               }
@@ -289,54 +288,17 @@ export default function TabOneScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: '#f8f6f3', // Warm off-white background (matches notes)
   },
   container: {
     flex: 1,
     position: 'relative',
-    backgroundColor: '#ffffff',
+    backgroundColor: '#f8f6f3', // Warm off-white background (matches notes)
   },
   content: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
-    paddingHorizontal: 16,
-  },
-  searchContainer: {
-    paddingTop: 16,
-    paddingBottom: 12,
-  },
-  searchBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#f1f3f5',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    gap: 12,
-  },
-  searchIcon: {
-    fontSize: 16,
-    color: '#868e96',
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 16,
-    color: '#333',
-    padding: 0,
-  },
-  sortButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
-    backgroundColor: '#e9ecef',
-  },
-  sortButtonText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#495057',
-  },
-  filterContainer: {
-    paddingBottom: 16,
+    backgroundColor: '#f8f6f3', // Warm off-white background (matches notes)
+    paddingHorizontal: 20, // Match notes page
   },
   list: {
     flex: 1,
@@ -352,16 +314,18 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     textAlign: 'center',
-    fontSize: 16,
-    color: '#868e96',
-    lineHeight: 24,
+    fontSize: 18,
+    color: '#6b5b4d', // Brown text (matches notes)
+    lineHeight: 28,
+    fontWeight: '300',
+    letterSpacing: -0.2,
   },
   keyboardView: {
     flex: 1,
   },
   modalContainer: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#f8f6f3', // Match notes modal bg
   },
   formContainer: {
     flex: 1,
@@ -438,5 +402,33 @@ const styles = StyleSheet.create({
     marginTop: 12,
     fontSize: 16,
     color: '#666',
+  },
+  viewToggle: {
+    flexDirection: 'row',
+    backgroundColor: '#ffffff',
+    borderRadius: 2,
+    padding: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  toggleButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 1,
+  },
+  toggleButtonActive: {
+    backgroundColor: '#8b6914', // Golden brown (matches notes)
+  },
+  toggleButtonText: {
+    fontSize: 11,
+    fontWeight: '600',
+    letterSpacing: 1,
+    color: '#6b5b4d', // Brown text (matches notes)
+  },
+  toggleButtonTextActive: {
+    color: '#ffffff',
   },
 });

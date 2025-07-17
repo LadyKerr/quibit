@@ -1,23 +1,35 @@
 import React, { useState } from 'react';
 import { View, FlatList, TouchableOpacity, Modal, StyleSheet, TextInput, SafeAreaView, Alert, TouchableWithoutFeedback } from 'react-native';
 import { useNotes, Note } from '../../hooks/useNotes';
+import { useSearch } from '../../hooks/useSearch';
 import { NoteForm } from '../../components/NoteForm';
+import { SearchBar } from '../../components/SearchBar';
 import { ThemedView } from '../../components/ThemedView';
 import { ThemedText } from '../../components/ThemedText';
 import { AppHeader } from '../../components/AppHeader';
 
 export default function NotesScreen() {
-  const { notes, addNote, editNote, deleteNote } = useNotes();
+  const { notes: allNotes, addNote, editNote, deleteNote } = useNotes();
+  
+  // Use the search hook
+  const {
+    searchQuery,
+    setSearchQuery,
+    sortBy,
+    setSortBy,
+    filters,
+    setFilters,
+    items: searchedNotes,
+    totalCount,
+    filteredCount,
+    hasActiveFilters,
+    clearAll,
+  } = useSearch(allNotes, ['title', 'content']);
+  
   const [isModalVisible, setModalVisible] = useState(false);
   const [editingNote, setEditingNote] = useState<Note | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'cards' | 'list'>('cards');
   const [showActionMenu, setShowActionMenu] = useState<string | null>(null);
-
-  const filteredNotes = notes.filter(note =>
-    note.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    note.content.toLowerCase().includes(searchQuery.toLowerCase())
-  );
 
   const handleAddNote = async (data: { title: string; content: string }) => {
     await addNote(data.title, data.content);
@@ -70,42 +82,66 @@ export default function NotesScreen() {
 
   const renderNoteCard = ({ item }: { item: Note }) => (
     <View style={styles.noteCard}>
+      <View style={styles.cardHeader}>
+        <View style={styles.cardAccent} />
+        <TouchableOpacity
+          style={styles.cardMenuButton}
+          onPress={(e) => {
+            e.stopPropagation();
+            setShowActionMenu(showActionMenu === item.id ? null : item.id);
+          }}
+        >
+          <ThemedText style={styles.cardMenuIcon}>⋯</ThemedText>
+        </TouchableOpacity>
+      </View>
+      
       <TouchableOpacity
         style={styles.noteContent}
         onPress={() => {
           setEditingNote(item);
           setModalVisible(true);
         }}
+        activeOpacity={0.7}
       >
         <ThemedText style={styles.noteTitle}>{item.title}</ThemedText>
-        <ThemedText style={styles.notePreview} numberOfLines={3}>
+        <ThemedText style={styles.notePreview} numberOfLines={4}>
           {item.content}
         </ThemedText>
-        <ThemedText style={styles.noteTime}>
-          {formatTimeAgo(item.created_at)}
-        </ThemedText>
+        <View style={styles.cardFooter}>
+          <ThemedText style={styles.noteTime}>
+            {formatTimeAgo(item.created_at)}
+          </ThemedText>
+          <View style={styles.readMoreIndicator}>
+            <ThemedText style={styles.readMoreText}>READ MORE</ThemedText>
+          </View>
+        </View>
       </TouchableOpacity>
 
-      <View style={styles.noteActions}>
-        <TouchableOpacity
-          style={styles.actionButton}
-          onPress={() => {
-            setEditingNote(item);
-            setModalVisible(true);
-          }}
-        >
-          <ThemedText style={styles.actionIcon}>✏️</ThemedText>
-          <ThemedText style={styles.actionLabel}>Edit</ThemedText>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.actionButton, styles.actionButtonDanger]}
-          onPress={() => handleDeleteNote(item)}
-        >
-          <ThemedText style={styles.actionIcon}>🗑️</ThemedText>
-          <ThemedText style={[styles.actionLabel, styles.actionLabelDanger]}>Delete</ThemedText>
-        </TouchableOpacity>
-      </View>
+      {showActionMenu === item.id && (
+        <View style={styles.actionMenu}>
+          <TouchableOpacity
+            style={styles.actionMenuItem}
+            onPress={() => {
+              setEditingNote(item);
+              setModalVisible(true);
+              setShowActionMenu(null);
+            }}
+          >
+            <ThemedText style={styles.actionMenuIcon}>✏️</ThemedText>
+            <ThemedText style={styles.actionMenuText}>Edit</ThemedText>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.actionMenuItem, styles.actionMenuItemDanger]}
+            onPress={() => {
+              handleDeleteNote(item);
+              setShowActionMenu(null);
+            }}
+          >
+            <ThemedText style={styles.actionMenuIcon}>🗑️</ThemedText>
+            <ThemedText style={[styles.actionMenuText, styles.actionMenuTextDanger]}>Delete</ThemedText>
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
   );
 
@@ -116,7 +152,9 @@ export default function NotesScreen() {
         setEditingNote(item);
         setModalVisible(true);
       }}
+      activeOpacity={0.7}
     >
+      <View style={styles.noteListAccent} />
       <View style={styles.noteListContent}>
         <View style={styles.noteListHeader}>
           <ThemedText style={styles.noteListTitle}>{item.title}</ThemedText>
@@ -167,7 +205,10 @@ export default function NotesScreen() {
   const renderEmptyComponent = () => (
     <View style={styles.emptyContainer}>
       <ThemedText style={styles.emptyText}>
-        No notes yet. Tap the + button to add your first note!
+        {hasActiveFilters 
+          ? "No notes match your search criteria. Try adjusting your filters."
+          : "No notes yet. Tap the + button to add your first note!"
+        }
       </ThemedText>
     </View>
   );
@@ -185,24 +226,31 @@ export default function NotesScreen() {
         <TouchableWithoutFeedback onPress={() => setShowActionMenu(null)}>
           <View style={styles.content}>
             {/* Search Bar */}
-            <View style={styles.searchContainer}>
-              <View style={styles.searchBar}>
-                <ThemedText style={styles.searchIcon}>🔍</ThemedText>
-                <TextInput
-                  style={styles.searchInput}
-                  placeholder="Search notes..."
-                  value={searchQuery}
-                  onChangeText={setSearchQuery}
-                  placeholderTextColor="#999"
-                />
-              </View>
-            </View>
+            <SearchBar
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              sortBy={sortBy}
+              onSortChange={setSortBy}
+              filters={filters}
+              onFiltersChange={setFilters}
+              availableCategories={[]} // Notes don't have categories by default
+              placeholder="Search your thoughts..."
+              showCategoryFilter={false}
+              showNotesFilter={false}
+              hasActiveFilters={hasActiveFilters}
+              onClearAll={clearAll}
+              filteredCount={filteredCount}
+              totalCount={totalCount}
+            />
 
             {/* Header with count and view toggle */}
             <View style={styles.headerRow}>
-              <ThemedText style={styles.notesCount}>
-                {filteredNotes.length} Note{filteredNotes.length !== 1 ? 's' : ''}
-              </ThemedText>
+              <View style={styles.headerLeft}>
+                <ThemedText style={styles.sectionTitle}>YOUR NOTES</ThemedText>
+                <ThemedText style={styles.notesCount}>
+                  {filteredCount} {filteredCount !== 1 ? 'items' : 'item'}
+                </ThemedText>
+              </View>
               <View style={styles.viewToggle}>
                 <TouchableOpacity
                   style={[
@@ -214,7 +262,7 @@ export default function NotesScreen() {
                   <ThemedText style={[
                     styles.toggleButtonText,
                     viewMode === 'cards' && styles.toggleButtonTextActive
-                  ]}>Cards</ThemedText>
+                  ]}>CARDS</ThemedText>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[
@@ -226,17 +274,17 @@ export default function NotesScreen() {
                   <ThemedText style={[
                     styles.toggleButtonText,
                     viewMode === 'list' && styles.toggleButtonTextActive
-                  ]}>List</ThemedText>
+                  ]}>LIST</ThemedText>
                 </TouchableOpacity>
               </View>
             </View>
 
             <FlatList
-              data={filteredNotes}
+              data={searchedNotes}
               keyExtractor={item => item.id}
               renderItem={viewMode === 'cards' ? renderNoteCard : renderNoteList}
               ListEmptyComponent={renderEmptyComponent}
-              contentContainerStyle={filteredNotes.length === 0 ? styles.emptyList : styles.listContent}
+              contentContainerStyle={searchedNotes.length === 0 ? styles.emptyList : styles.listContent}
               showsVerticalScrollIndicator={false}
               onScrollBeginDrag={() => setShowActionMenu(null)}
             />
@@ -261,39 +309,274 @@ export default function NotesScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: '#f8f6f3', // Warm off-white background
   },
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: '#f8f6f3',
   },
   content: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#f8f6f3',
+    paddingHorizontal: 20,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingBottom: 24,
+    paddingTop: 8,
+  },
+  headerLeft: {
+    flex: 1,
+  },
+  sectionTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    letterSpacing: 2,
+    color: '#8b6914', // Golden brown accent
+    marginBottom: 4,
+  },
+  notesCount: {
+    fontSize: 32,
+    fontWeight: '300', // Light weight for elegance
+    color: '#2c1810', // Dark brown
+    letterSpacing: -0.5,
+  },
+  viewToggle: {
+    flexDirection: 'row',
+    backgroundColor: '#ffffff',
+    borderRadius: 2,
+    padding: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  toggleButton: {
     paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 1,
   },
-  searchContainer: {
-    paddingTop: 16,
-    paddingBottom: 12,
+  toggleButtonActive: {
+    backgroundColor: '#8b6914', // Golden brown
   },
-  searchBar: {
+  toggleButtonText: {
+    fontSize: 11,
+    fontWeight: '600',
+    letterSpacing: 1,
+    color: '#6b5b4d',
+  },
+  toggleButtonTextActive: {
+    color: '#ffffff',
+  },
+  listContent: {
+    paddingBottom: 32,
+  },
+  noteCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 0, // Clean rectangular edges
+    marginBottom: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 4,
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    padding: 0,
+    position: 'relative',
+  },
+  cardAccent: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: 6,
+    height: '100%',
+    backgroundColor: '#8b6914', // Golden brown accent
+  },
+  cardMenuButton: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    padding: 8,
+    zIndex: 10,
+  },
+  cardMenuIcon: {
+    fontSize: 18,
+    color: '#9ca3af',
+    fontWeight: '600',
+  },
+  noteContent: {
+    padding: 24,
+    paddingTop: 32,
+    paddingRight: 48, // Space for menu button
+  },
+  noteTitle: {
+    fontSize: 24,
+    fontWeight: '300', // Light weight
+    color: '#2c1810',
+    marginBottom: 16,
+    lineHeight: 32,
+    letterSpacing: -0.3,
+  },
+  notePreview: {
+    fontSize: 16,
+    color: '#6b5b4d',
+    lineHeight: 24,
+    marginBottom: 24,
+    fontWeight: '400',
+  },
+  cardFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  noteTime: {
+    fontSize: 12,
+    color: '#9ca3af',
+    fontWeight: '500',
+    letterSpacing: 0.5,
+  },
+  readMoreIndicator: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: '#f3f1ee',
+    borderRadius: 1,
+  },
+  readMoreText: {
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 1.5,
+    color: '#8b6914',
+  },
+  // List view styles
+  noteListItem: {
+    backgroundColor: '#ffffff',
+    borderRadius: 0,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f1f3f5',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    gap: 12,
+    position: 'relative',
+    overflow: 'hidden',
+    minHeight: 80,
   },
-  searchIcon: {
-    fontSize: 16,
-    color: '#868e96',
+  noteListAccent: {
+    width: 4,
+    height: '100%',
+    backgroundColor: '#8b6914',
+    position: 'absolute',
+    left: 0,
+    top: 0,
   },
-  searchInput: {
+  noteListContent: {
     flex: 1,
+    padding: 16,
+    paddingLeft: 20,
+    paddingRight: 48,
+  },
+  noteListHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  noteListTitle: {
     fontSize: 16,
-    color: '#333',
-    padding: 0,
+    fontWeight: '500',
+    color: '#2c1810',
+    flex: 1,
+    marginRight: 8,
+  },
+  noteListTime: {
+    fontSize: 11,
+    color: '#9ca3af',
+    fontWeight: '500',
+    letterSpacing: 0.5,
+  },
+  noteListPreview: {
+    fontSize: 14,
+    color: '#6b5b4d',
+    lineHeight: 20,
+  },
+  listActionButton: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    padding: 8,
+    borderRadius: 6,
+  },
+  listActionIcon: {
+    fontSize: 16,
+    color: '#9ca3af',
+    fontWeight: 'bold',
+  },
+  actionMenu: {
+    position: 'absolute',
+    right: 16,
+    top: 50,
+    backgroundColor: 'white',
+    borderRadius: 8,
+    paddingVertical: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 8,
+    borderWidth: 1,
+    borderColor: '#f1f3f5',
+    minWidth: 120,
+    zIndex: 1000,
+  },
+  actionMenuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    gap: 8,
+  },
+  actionMenuItemDanger: {
+    // No additional background for danger items in menu
+  },
+  actionMenuIcon: {
+    fontSize: 14,
+  },
+  actionMenuText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#495057',
+  },
+  actionMenuTextDanger: {
+    color: '#d32f2f',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingTop: 60,
+    paddingHorizontal: 32,
+  },
+  emptyText: {
+    textAlign: 'center',
+    fontSize: 18,
+    color: '#6b5b4d',
+    lineHeight: 28,
+    fontWeight: '300',
+    letterSpacing: -0.2,
+  },
+  emptyList: {
+    flex: 1,
   },
   headerRow: {
     flexDirection: 'row',
