@@ -288,17 +288,17 @@ export default function TabOneScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: '#f8f6f3', // Warm off-white background (matches notes)
   },
   container: {
     flex: 1,
     position: 'relative',
-    backgroundColor: '#ffffff',
+    backgroundColor: '#f8f6f3', // Warm off-white background (matches notes)
   },
   content: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
-    paddingHorizontal: 16,
+    backgroundColor: '#f8f6f3', // Warm off-white background (matches notes)
+    paddingHorizontal: 20, // Match notes page
   },
   list: {
     flex: 1,
@@ -314,16 +314,18 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     textAlign: 'center',
-    fontSize: 16,
-    color: '#868e96',
-    lineHeight: 24,
+    fontSize: 18,
+    color: '#6b5b4d', // Brown text (matches notes)
+    lineHeight: 28,
+    fontWeight: '300',
+    letterSpacing: -0.2,
   },
   keyboardView: {
     flex: 1,
   },
   modalContainer: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#f8f6f3', // Match notes modal bg
   },
   formContainer: {
     flex: 1,
@@ -400,5 +402,33 @@ const styles = StyleSheet.create({
     marginTop: 12,
     fontSize: 16,
     color: '#666',
+  },
+  viewToggle: {
+    flexDirection: 'row',
+    backgroundColor: '#ffffff',
+    borderRadius: 2,
+    padding: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  toggleButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 1,
+  },
+  toggleButtonActive: {
+    backgroundColor: '#8b6914', // Golden brown (matches notes)
+  },
+  toggleButtonText: {
+    fontSize: 11,
+    fontWeight: '600',
+    letterSpacing: 1,
+    color: '#6b5b4d', // Brown text (matches notes)
+  },
+  toggleButtonTextActive: {
+    color: '#ffffff',
   },
 });
