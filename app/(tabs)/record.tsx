@@ -152,48 +152,50 @@ export default function RecordScreen() {
 
   const renderRecordingState = () => (
     <View style={styles.recordingContainer}>
-      <ThemedText style={styles.recordingTimer}>
-        {formatDuration(recordingDuration)}
-      </ThemedText>
-      <View style={styles.recordingIndicator}>
-        <View style={styles.recordingDot} />
-        <ThemedText style={styles.recordingText}>Recording</ThemedText>
-      </View>
-      
-      {/* Dynamic waveform visualization */}
-      <View style={styles.waveformContainer}>
-        {waveformData.map((height, index) => (
-          <View 
-            key={index} 
-            style={[
-              styles.waveformBar,
-              { height }
-            ]} 
-          />
-        ))}
-      </View>
+      <View style={styles.recordingContent}>
+        <ThemedText style={styles.recordingTimer}>
+          {formatDuration(recordingDuration)}
+        </ThemedText>
+        <View style={styles.recordingIndicator}>
+          <View style={styles.recordingDot} />
+          <ThemedText style={styles.recordingText}>Recording</ThemedText>
+        </View>
+        
+        {/* Dynamic waveform visualization */}
+        <View style={styles.waveformContainer}>
+          {waveformData.map((height, index) => (
+            <View 
+              key={index} 
+              style={[
+                styles.waveformBar,
+                { height }
+              ]} 
+            />
+          ))}
+        </View>
 
-      <View style={styles.recordingControls}>
-        <TouchableOpacity 
-          style={styles.controlButton}
-          onPress={handleDiscardRecording}
-        >
-          <Ionicons name="trash" size={24} color="#FF3B30" />
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={[styles.controlButton, styles.stopButton]}
-          onPress={handleStopRecording}
-        >
-          <Ionicons name="pause" size={24} color="#fff" />
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={styles.controlButton}
-          onPress={handleStopRecording}
-        >
-          <Ionicons name="checkmark" size={24} color="#34C759" />
-        </TouchableOpacity>
+        <View style={styles.recordingControls}>
+          <TouchableOpacity 
+            style={styles.controlButton}
+            onPress={handleDiscardRecording}
+          >
+            <Ionicons name="trash" size={24} color="#FF3B30" />
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={[styles.controlButton, styles.stopButton]}
+            onPress={handleStopRecording}
+          >
+            <Ionicons name="pause" size={24} color="#fff" />
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={styles.controlButton}
+            onPress={handleStopRecording}
+          >
+            <Ionicons name="checkmark" size={24} color="#34C759" />
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
@@ -323,14 +325,20 @@ const styles = StyleSheet.create({
   },
   recordingContainer: {
     flex: 1,
+    paddingHorizontal: 32,
+    paddingTop: 60,
+  },
+  recordingContent: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 32,
+    marginTop: -40, // Slight adjustment to center better
   },
   recordingTimer: {
     fontSize: 48,
     fontWeight: 'bold',
     marginBottom: 16,
+    textAlign: 'center',
   },
   recordingIndicator: {
     flexDirection: 'row',
