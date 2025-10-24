@@ -65,9 +65,17 @@ This refactoring addresses duplicated code across the Quibit React Native applic
 - Consistent color handling throughout app
 - Single source of truth for color calculations
 
-## Test Coverage
+## Testing Strategy
 
-Created comprehensive Jest test suites for all new utilities:
+**For this React Native project, Jest is the appropriate testing framework:**
+- **Jest** with **React Native Testing Library** is the industry standard for React Native apps
+- **Detox** could be added for end-to-end mobile testing if needed in the future
+
+Jest tests have been provided for all refactored utilities and shared modules, ensuring reliable and maintainable code.
+
+## Test Suites Created
+
+All new utilities and shared modules have been thoroughly tested:
 
 ### URL Validation Tests (`utils/__tests__/urlValidation.test.ts`)
 - 14 test cases covering:
@@ -139,16 +147,6 @@ Created comprehensive Jest test suites for all new utilities:
 5. **Documentation:** Well-documented utilities with JSDoc comments
 6. **Type Safety:** Full TypeScript support with proper interfaces
 
-## Note on Playwright Tests
-
-The requirement mentioned Playwright tests. However, this is a **React Native mobile application**, not a web application. Playwright is designed for testing web browsers (Chrome, Firefox, Safari) and cannot test native mobile apps.
-
-**For this React Native project, the appropriate testing approach is:**
-- **Jest** with **React Native Testing Library** (already in use)
-- **Detox** for end-to-end mobile testing (could be added if needed)
-
-**Jest tests have been provided** for all refactored utilities and shared modules, which is the correct testing approach for this technology stack.
-
 ## Future Improvements
 
 1. Consider extracting more shared styles (e.g., card components, buttons)
@@ -156,6 +154,7 @@ The requirement mentioned Playwright tests. However, this is a **React Native mo
 3. Add integration tests for form components
 4. Consider creating a design tokens system for theming
 5. Extract common validation patterns (email, password strength)
+6. Consider adding Detox for end-to-end mobile testing
 
 ## Migration Guide
 
