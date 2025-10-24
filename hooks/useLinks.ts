@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
@@ -471,29 +471,31 @@ export const useLinks = () => {
     }
   };
 
-  const filteredLinks = links
-    .filter((link) => {
-      if (!searchQuery.trim()) {
-        // If no search query, only filter by category
-        return !selectedCategory || link.category === selectedCategory;
-      }
+  const filteredLinks = useMemo(() => {
+    return links
+      .filter((link) => {
+        if (!searchQuery.trim()) {
+          // If no search query, only filter by category
+          return !selectedCategory || link.category === selectedCategory;
+        }
 
-      const query = searchQuery.trim().toLowerCase();
-      const matchesSearch = [
-        link.title || '',
-        link.url || '',
-        link.notes || ''
-      ].some(field => field.toLowerCase().includes(query));
+        const query = searchQuery.trim().toLowerCase();
+        const matchesSearch = [
+          link.title || '',
+          link.url || '',
+          link.notes || ''
+        ].some(field => field.toLowerCase().includes(query));
 
-      const matchesCategory = !selectedCategory || link.category === selectedCategory;
+        const matchesCategory = !selectedCategory || link.category === selectedCategory;
 
-      return matchesSearch && matchesCategory;
-    })
-    .sort((a, b) => {
-      const dateA = new Date(a.created_at).getTime();
-      const dateB = new Date(b.created_at).getTime();
-      return sortOrder === 'newest' ? dateB - dateA : dateA - dateB;
-    });
+        return matchesSearch && matchesCategory;
+      })
+      .sort((a, b) => {
+        const dateA = new Date(a.created_at).getTime();
+        const dateB = new Date(b.created_at).getTime();
+        return sortOrder === 'newest' ? dateB - dateA : dateA - dateB;
+      });
+  }, [links, searchQuery, selectedCategory, sortOrder]);
 
   return {
     links: filteredLinks,

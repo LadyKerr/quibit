@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, memo } from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Link } from '../hooks/useLinks';
 import { ThemedText } from './ThemedText';
@@ -31,7 +31,7 @@ interface LinkCardProps {
   categoryColors?: { [key: string]: string };
 }
 
-export function LinkCard({ link, onEdit, onPress, onDelete, categoryColors = {} }: LinkCardProps) {
+const LinkCardComponent = ({ link, onEdit, onPress, onDelete, categoryColors = {} }: LinkCardProps) => {
   const [showNotes, setShowNotes] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
 
@@ -149,7 +149,21 @@ export function LinkCard({ link, onEdit, onPress, onDelete, categoryColors = {} 
       />
     </>
   );
-}
+};
+
+// Memoize the component to prevent unnecessary re-renders
+export const LinkCard = memo(LinkCardComponent, (prevProps, nextProps) => {
+  // Custom comparison function for better performance
+  return (
+    prevProps.link.id === nextProps.link.id &&
+    prevProps.link.title === nextProps.link.title &&
+    prevProps.link.url === nextProps.link.url &&
+    prevProps.link.category === nextProps.link.category &&
+    prevProps.link.notes === nextProps.link.notes &&
+    prevProps.link.created_at === nextProps.link.created_at &&
+    JSON.stringify(prevProps.categoryColors) === JSON.stringify(nextProps.categoryColors)
+  );
+});
 
 const styles = StyleSheet.create({
   card: {

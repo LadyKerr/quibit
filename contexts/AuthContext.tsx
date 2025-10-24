@@ -69,23 +69,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     let mounted = true;
 
     // Check active session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session: sessionData } }) => {
       if (mounted) {
-        setSession(session);
+        setSession(sessionData);
         setLoading(false);
-        if (session?.user) {
-          loadProfile();
-        }
       }
     });
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, sessionData) => {
       if (mounted) {
-        setSession(session);
-        if (session?.user) {
-          loadProfile();
-        }
+        setSession(sessionData);
       }
     });
 
@@ -94,6 +88,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       subscription.unsubscribe();
     };
   }, []);
+
+  // Separate useEffect for loading profile when session changes
+  useEffect(() => {
+    if (session?.user) {
+      loadProfile();
+    } else {
+      setProfile(null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.user?.id]);
 
   const signUp = async (email: string, password: string) => {
     const { error } = await supabase.auth.signUp({

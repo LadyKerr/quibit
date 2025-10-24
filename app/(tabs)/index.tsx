@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   StyleSheet,
   TextInput,
@@ -77,7 +77,7 @@ export default function TabOneScreen() {
     setSortOrder(current => current === 'newest' ? 'oldest' : 'newest');
   };
 
-  const handleDelete = (link: LinkType) => {
+  const handleDelete = useCallback((link: LinkType) => {
     Alert.alert(
       'Delete Link',
       `Are you sure you want to delete "${link.title}"?`,
@@ -98,9 +98,9 @@ export default function TabOneScreen() {
         },
       ]
     );
-  };
+  }, [deleteLink]);
 
-  const handleSubmit = async (data: {
+  const handleSubmit = useCallback(async (data: {
     title: string;
     url: string;
     category: string;
@@ -116,14 +116,14 @@ export default function TabOneScreen() {
       setShowAddModal(false);
       setEditingLink(null);
     }
-  };
+  }, [editingLink, editLink, addLink]);
 
-  const handleEdit = (link: LinkType) => {
+  const handleEdit = useCallback((link: LinkType) => {
     setEditingLink(link);
     setShowAddModal(true);
-  };
+  }, []);
 
-  const renderItem = ({ item }: { item: LinkType }) => (
+  const renderItem = useCallback(({ item }: { item: LinkType }) => (
     <LinkCard
       link={item}
       onEdit={handleEdit}
@@ -131,6 +131,17 @@ export default function TabOneScreen() {
       onDelete={handleDelete}
       categoryColors={categoryColors}
     />
+  ), [handleEdit, handleDelete, categoryColors]);
+
+  const keyExtractor = useCallback((item: LinkType) => item.id, []);
+
+  const getItemLayout = useCallback(
+    (_data: LinkType[] | null | undefined, index: number) => ({
+      length: 160, // Approximate height of LinkCard
+      offset: 176 * index, // 160 + 16 (marginBottom)
+      index,
+    }),
+    []
   );
 
   return (
@@ -185,10 +196,16 @@ export default function TabOneScreen() {
             <FlatList
               data={links}
               renderItem={renderItem}
-              keyExtractor={item => item.id}
+              keyExtractor={keyExtractor}
+              getItemLayout={getItemLayout}
               style={styles.list}
               contentContainerStyle={styles.listContent}
               showsVerticalScrollIndicator={false}
+              removeClippedSubviews={true}
+              maxToRenderPerBatch={10}
+              updateCellsBatchingPeriod={50}
+              initialNumToRender={10}
+              windowSize={10}
               ListEmptyComponent={
                 <View style={styles.emptyContainer}>
                   <ThemedText style={styles.emptyText}>
