@@ -2,7 +2,8 @@
  * URL validation utilities for link management
  */
 
-const URL_REGEX = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/;
+// Simplified regex to avoid ReDoS vulnerability
+const URL_REGEX = /^(https?:\/\/)?([a-z0-9-]+\.)+[a-z]{2,6}(\/[^\s]*)?$/i;
 const MAX_URL_LENGTH = 2048;
 const BLOCKED_DOMAINS = ['example.com', 'evil.com'];
 
