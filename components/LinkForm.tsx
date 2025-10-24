@@ -3,54 +3,8 @@ import { View, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import { ThemedText } from './ThemedText';
 import { CategoryButtons } from './CategoryButtons';
 import { Link } from '../hooks/useLinks';
-
-const URL_REGEX = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/;
-const MAX_URL_LENGTH = 2048;
-const BLOCKED_DOMAINS = ['example.com', 'evil.com']; // Add domains you want to block
-
-interface UrlValidationResult {
-  isValid: boolean;
-  error?: string;
-}
-
-const validateUrl = (url: string): UrlValidationResult => {
-  if (!url.trim()) {
-    return { isValid: false, error: 'URL is required' };
-  }
-
-  if (url.length > MAX_URL_LENGTH) {
-    return { isValid: false, error: 'URL is too long' };
-  }
-
-  let processedUrl = url.trim().toLowerCase();
-  if (!processedUrl.startsWith('http')) {
-    processedUrl = `https://${processedUrl}`;
-  }
-
-  try {
-    const urlObj = new URL(processedUrl);
-    
-    // Check for blocked domains
-    const domain = urlObj.hostname.toLowerCase();
-    if (BLOCKED_DOMAINS.includes(domain)) {
-      return { isValid: false, error: 'This domain is not allowed' };
-    }
-
-    // Check for valid protocol
-    if (!['http:', 'https:'].includes(urlObj.protocol)) {
-      return { isValid: false, error: 'Only HTTP and HTTPS protocols are allowed' };
-    }
-
-    // Check URL format with regex
-    if (!URL_REGEX.test(processedUrl)) {
-      return { isValid: false, error: 'Invalid URL format' };
-    }
-
-    return { isValid: true };
-  } catch {
-    return { isValid: false, error: 'Invalid URL' };
-  }
-};
+import { validateUrl, processUrl, UrlValidationResult } from '../utils/urlValidation';
+import { formStyles } from '../styles/formStyles';
 
 interface LinkFormProps {
   onSubmit: (data: {
@@ -94,10 +48,7 @@ export function LinkForm({
   const handleSubmit = async () => {
     if (!title.trim() || !urlValidation.isValid) return;
 
-    let processedUrl = url.trim();
-    if (!processedUrl.toLowerCase().startsWith('http')) {
-      processedUrl = `https://${processedUrl}`;
-    }
+    const processedUrl = processUrl(url);
 
     try {
       // Add timestamp at submission time
@@ -122,13 +73,13 @@ export function LinkForm({
   const isButtonDisabled = !title.trim() || !urlValidation.isValid;
 
   return (
-    <View style={styles.form}>
-      <ThemedText style={styles.formTitle}>
+    <View style={formStyles.form}>
+      <ThemedText style={formStyles.formTitle}>
         {isEditing ? 'Edit Link' : 'Add Link'}
       </ThemedText>
       
       <TextInput
-        style={styles.input}
+        style={formStyles.input}
         placeholder="Title"
         value={title}
         onChangeText={setTitle}
@@ -137,7 +88,7 @@ export function LinkForm({
 
       <View>
         <TextInput
-          style={[styles.input, urlError ? styles.inputError : null]}
+          style={[formStyles.input, urlError ? formStyles.inputError : null]}
           placeholder="URL (e.g., google.com)"
           value={url}
           onChangeText={handleUrlChange}
@@ -146,12 +97,12 @@ export function LinkForm({
           autoCapitalize="none"
         />
         {urlError ? (
-          <ThemedText style={styles.errorText}>{urlError}</ThemedText>
+          <ThemedText style={formStyles.errorText}>{urlError}</ThemedText>
         ) : null}
       </View>
 
       <TextInput
-        style={[styles.input, styles.notesInput]}
+        style={[formStyles.input, styles.notesInput]}
         placeholder="Notes (optional)"
         value={notes}
         onChangeText={setNotes}
@@ -172,25 +123,25 @@ export function LinkForm({
         />
       </View>
 
-      <View style={styles.formButtons}>
+      <View style={formStyles.formButtons}>
         {isEditing && onCancel && (
           <TouchableOpacity
-            style={[styles.button, styles.cancelButton]}
+            style={[formStyles.button, formStyles.cancelButton]}
             onPress={onCancel}
           >
-            <ThemedText style={styles.buttonText}>Cancel</ThemedText>
+            <ThemedText style={formStyles.buttonText}>Cancel</ThemedText>
           </TouchableOpacity>
         )}
         <TouchableOpacity
           style={[
-            styles.button,
-            isButtonDisabled ? styles.buttonDisabled : null,
-            isEditing ? styles.editSubmitButton : styles.fullWidthButton
+            formStyles.button,
+            isButtonDisabled ? formStyles.buttonDisabled : null,
+            isEditing ? formStyles.submitButton : formStyles.fullWidthButton
           ]}
           onPress={handleSubmit}
           disabled={isButtonDisabled}
         >
-          <ThemedText style={styles.buttonText}>
+          <ThemedText style={formStyles.buttonText}>
             {isEditing ? 'Save Changes' : 'Save Link'}
           </ThemedText>
         </TouchableOpacity>
@@ -200,52 +151,10 @@ export function LinkForm({
 }
 
 const styles = StyleSheet.create({
-  form: {
-    marginBottom: 20,
-    backgroundColor: 'white',
-    padding: 20,
-    borderRadius: 12,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  input: {
-    backgroundColor: '#f0f0f0',
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 12,
-    fontSize: 16,
-    color: '#333', // Explicit text color
-  },
-  inputError: {
-    borderWidth: 1,
-    borderColor: '#ff6b6b',
-    backgroundColor: '#fff0f0',
-  },
-  errorText: {
-    color: '#ff6b6b',
-    fontSize: 12,
-    marginTop: -8,
-    marginBottom: 12,
-    marginLeft: 4,
-    fontWeight: '500',
-  },
   notesInput: {
     height: 80,
     textAlignVertical: 'top',
     paddingTop: 12,
-  },
-  formTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    marginBottom: 16,
-    textAlign: 'center',
-    color: '#333', // Explicit text color
   },
   categorySection: {
     marginBottom: 16,
@@ -255,33 +164,5 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginBottom: 8,
     color: '#666',
-  },
-  formButtons: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  button: {
-    backgroundColor: '#007AFF',
-    padding: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  buttonDisabled: {
-    backgroundColor: '#ccc',
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  fullWidthButton: {
-    flex: 1,
-  },
-  editSubmitButton: {
-    flex: 2,
-  },
-  cancelButton: {
-    flex: 1,
-    backgroundColor: '#6c757d',
   },
 });
