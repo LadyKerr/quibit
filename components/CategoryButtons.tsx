@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
 import { ThemedText } from './ThemedText';
+import { getCategoryColors } from '../utils/categoryUtils';
 
 // Map of category to pastel colors
 export const CATEGORY_COLORS: { [key: string]: { background: string; text: string } } = {
@@ -22,19 +23,6 @@ interface CategoryButtonsProps {
   categoryColors?: { [key: string]: string };
 }
 
-// Helper function to add transparency to hex colors
-const addTransparency = (hexColor: string, opacity: number = 0.2): string => {
-  // Remove # if present
-  const hex = hexColor.replace('#', '');
-  
-  // Convert to RGB
-  const r = parseInt(hex.substring(0, 2), 16);
-  const g = parseInt(hex.substring(2, 4), 16);
-  const b = parseInt(hex.substring(4, 6), 16);
-  
-  return `rgba(${r}, ${g}, ${b}, ${opacity})`;
-};
-
 export function CategoryButtons({
   categories,
   selectedCategory,
@@ -48,32 +36,6 @@ export function CategoryButtons({
     return categories.map(category => category.trim().replace(/[<>]/g, ''));
   }, [categories]);
 
-  const memoizedCategoryColors = useMemo(() => {
-    const colorMap: { [key: string]: { background: string; text: string } } = {};
-
-    sanitizedCategories.forEach(trimmedCategory => {
-      if (categoryColors[trimmedCategory]) {
-        const customColor = categoryColors[trimmedCategory];
-        colorMap[trimmedCategory] = {
-          background: addTransparency(customColor),
-          text: customColor
-        };
-      } else {
-        colorMap[trimmedCategory] = CATEGORY_COLORS[trimmedCategory] || { 
-          background: '#F0F0F0', 
-          text: '#666666' 
-        };
-      }
-    });
-    
-    return colorMap;
-  }, [sanitizedCategories, categoryColors]);
-
-  const getCategoryColors = (category: string) => {
-    const trimmedCategory = category.trim().replace(/[<>]/g, '');
-    return memoizedCategoryColors[trimmedCategory] || { background: '#F0F0F0', text: '#666666' };
-  };
-
   return (
     <ScrollView 
       horizontal 
@@ -81,9 +43,9 @@ export function CategoryButtons({
       style={[styles.categoryList, style]}
       contentContainerStyle={styles.contentContainer}
     >
-      {categories.map((cat) => {
-        const colors = getCategoryColors(cat);
-        const isSelected = selectedCategory === cat;
+      {sanitizedCategories.map((cat, index) => {
+        const colors = getCategoryColors(cat, categoryColors);
+        const isSelected = selectedCategory === categories[index];
         return (
           <TouchableOpacity
             key={cat}
@@ -93,7 +55,7 @@ export function CategoryButtons({
               isSelected && styles.categoryButtonActive,
               isSelected && { backgroundColor: colors.background }
             ]}
-            onPress={() => onSelectCategory(cat)}
+            onPress={() => onSelectCategory(categories[index])}
           >
             <ThemedText style={[
               styles.categoryButtonText,

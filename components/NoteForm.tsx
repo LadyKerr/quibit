@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, TextInput, TouchableOpacity, StyleSheet, SafeAreaView, KeyboardAvoidingView, Platform } from 'react-native';
 import { ThemedText } from './ThemedText';
+import { formStyles } from '../styles/formStyles';
 
 interface NoteFormProps {
   onSubmit: (data: { title: string; content: string }) => void;
@@ -36,13 +37,13 @@ export function NoteForm({ onSubmit, onClose, initialData }: NoteFormProps) {
         </View>
 
         <View style={styles.formContainer}>
-          <View style={styles.form}>
-            <ThemedText style={styles.formTitle}>
+          <View style={formStyles.form}>
+            <ThemedText style={formStyles.formTitle}>
               {initialData ? 'Edit Note' : 'Add Note'}
             </ThemedText>
             
             <TextInput
-              style={styles.input}
+              style={formStyles.input}
               placeholder="Title"
               value={title}
               onChangeText={setTitle}
@@ -50,7 +51,7 @@ export function NoteForm({ onSubmit, onClose, initialData }: NoteFormProps) {
             />
 
             <TextInput
-              style={[styles.input, styles.contentInput]}
+              style={[formStyles.input, styles.contentInput]}
               placeholder="Write your note..."
               value={content}
               onChangeText={setContent}
@@ -59,18 +60,18 @@ export function NoteForm({ onSubmit, onClose, initialData }: NoteFormProps) {
               placeholderTextColor="#666"
             />
 
-            <View style={styles.formButtons}>
+            <View style={formStyles.formButtons}>
               <TouchableOpacity
-                style={[styles.button, styles.cancelButton]}
+                style={[formStyles.button, formStyles.cancelButton]}
                 onPress={onClose}
               >
-                <ThemedText style={styles.buttonText}>Cancel</ThemedText>
+                <ThemedText style={formStyles.buttonText}>Cancel</ThemedText>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[
-                  styles.button,
-                  isButtonDisabled ? styles.buttonDisabled : null,
-                  styles.submitButton
+                  formStyles.button,
+                  isButtonDisabled ? formStyles.buttonDisabled : null,
+                  formStyles.submitButton
                 ]}
                 onPress={handleSubmit}
                 disabled={isButtonDisabled}
@@ -78,7 +79,7 @@ export function NoteForm({ onSubmit, onClose, initialData }: NoteFormProps) {
                 accessibilityHint={isButtonDisabled ? 'Button is disabled. Please enter a title to enable saving.' : 'Tap to save your note'}
                 accessibilityState={{ disabled: isButtonDisabled }}
               >
-                <ThemedText style={styles.buttonText}>
+                <ThemedText style={formStyles.buttonText}>
                   {initialData ? 'Save Changes' : 'Save Note'}
                 </ThemedText>
               </TouchableOpacity>
@@ -119,63 +120,9 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
   },
-  form: {
-    backgroundColor: 'white',
-    padding: 20,
-    borderRadius: 12,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  formTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    marginBottom: 16,
-    textAlign: 'center',
-    color: '#333',
-  },
-  input: {
-    backgroundColor: '#f0f0f0',
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 16,
-    fontSize: 16,
-    color: '#333',
-  },
   contentInput: {
     height: 200,
     textAlignVertical: 'top',
     paddingTop: 12,
-  },
-  formButtons: {
-    flexDirection: 'row',
-    gap: 8,
-    marginTop: 16,
-  },
-  button: {
-    padding: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  buttonDisabled: {
-    backgroundColor: '#ccc',
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  cancelButton: {
-    flex: 1,
-    backgroundColor: '#6c757d',
-  },
-  submitButton: {
-    flex: 2,
-    backgroundColor: '#007AFF',
   },
 });

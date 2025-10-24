@@ -4,6 +4,7 @@ import { Link, router } from 'expo-router';
 import { ThemedView } from '../../components/ThemedView';
 import { ThemedText } from '../../components/ThemedText';
 import { useAuth } from '../../contexts/AuthContext';
+import { authStyles } from '../../styles/authStyles';
 
 export default function SignupScreen() {
   const [email, setEmail] = useState('');
@@ -37,20 +38,20 @@ export default function SignupScreen() {
   };
 
   return (
-    <ThemedView style={styles.container}>
+    <ThemedView style={authStyles.container}>
       <Image 
         source={require('../../assets/images/quibit-logo-transparent.png')}
-        style={styles.logo}
+        style={authStyles.logo}
         resizeMode="contain"
       />
       
-      <ThemedText style={styles.title}>Create Account</ThemedText>
-      <ThemedText style={styles.subtitle}>Join Quibit and start organizing your digital life ✨</ThemedText>
+      <ThemedText style={authStyles.title}>Create Account</ThemedText>
+      <ThemedText style={authStyles.subtitle}>Join Quibit and start organizing your digital life ✨</ThemedText>
 
-      <ThemedView style={styles.formContainer}>
-        <ThemedText style={styles.label}>Email</ThemedText>
+      <ThemedView style={authStyles.formContainer}>
+        <ThemedText style={authStyles.label}>Email</ThemedText>
         <TextInput
-          style={styles.input}
+          style={authStyles.input}
           placeholder="your@email.com"
           value={email}
           onChangeText={setEmail}
@@ -59,9 +60,9 @@ export default function SignupScreen() {
           placeholderTextColor="#999"
         />
         
-        <ThemedText style={styles.label}>Password</ThemedText>
+        <ThemedText style={authStyles.label}>Password</ThemedText>
         <TextInput
-          style={styles.input}
+          style={authStyles.input}
           placeholder="••••••••"
           value={password}
           onChangeText={setPassword}
@@ -70,11 +71,11 @@ export default function SignupScreen() {
         />
 
         <TouchableOpacity
-          style={[styles.button, loading && styles.buttonDisabled]}
+          style={[authStyles.button, loading && authStyles.buttonDisabled]}
           onPress={handleSignup}
           disabled={loading}
         >
-          <ThemedText style={styles.buttonText}>
+          <ThemedText style={authStyles.buttonText}>
             {loading ? 'Creating account...' : 'Sign Up'}
           </ThemedText>
         </TouchableOpacity>
@@ -90,63 +91,6 @@ export default function SignupScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  logo: {
-    width: 120,  // Increased from 80
-    height: 120, // Increased from 80
-    marginBottom: 16, // Increased from 16
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    paddingTop: 10,
-    marginBottom: 8,
-    textAlign: 'center', // Added for consistency
-  },
-  subtitle: {
-    fontSize: 18,
-    color: '#666',
-    marginBottom: 48,
-    textAlign: 'center', // Added to center the subtitle
-    paddingHorizontal: 20, // Added to control line length
-  },
-  formContainer: {
-    width: '100%',
-    maxWidth: 400,
-  },
-  label: {
-    fontSize: 16,
-    marginBottom: 8,
-    fontWeight: '500',
-  },
-  input: {
-    backgroundColor: '#f5f5f5',
-    padding: 16,
-    borderRadius: 12,
-    fontSize: 16,
-    marginBottom: 16,
-    width: '100%',
-  },
-  button: {
-    backgroundColor: '#4B7BEC',
-    padding: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  buttonDisabled: {
-    backgroundColor: '#A5B1C2',
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
   loginLink: {
     marginTop: 24,
     alignItems: 'center',
